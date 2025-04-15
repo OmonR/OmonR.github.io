@@ -16,7 +16,7 @@
             height: 300px;
             margin-bottom: 20px;
         }
-        #send-location, #retry-location, #take-photo {
+        #send-location, #take-photo {
             padding: 10px 20px;
             background-color: #4CAF50;
             color: white;
@@ -25,7 +25,7 @@
             cursor: pointer;
             font-size: 16px;
         }
-        #send-location:disabled {
+        #take-photo:disabled {
             background-color: gray;
             cursor: not-allowed;
         }
@@ -121,10 +121,14 @@
             var canvas = document.getElementById('canvas');
             var ctx = canvas.getContext('2d');
             
+            // Устанавливаем размер canvas в соответствие с видео
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
+
+            // Рисуем текущий кадр с видео на canvas
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             
+            // Отправка изображения в Telegram Web App
             var imageData = canvas.toDataURL('image/png');
             window.Telegram.WebApp.sendData(imageData);  // Отправка изображения в Telegram
         });
