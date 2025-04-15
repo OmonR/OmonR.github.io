@@ -78,6 +78,14 @@ body {
 
 #canvas {
     display: none;
+    width: 100%;
+    height: auto;
+}
+
+.camera-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .action-button {
@@ -105,9 +113,40 @@ body {
     cursor: not-allowed;
 }
 
+.action-button.secondary {
+    background-color: #6b7280;
+    color: white;
+}
+
+.action-button.secondary:hover {
+    background-color: #4b5563;
+}
+
 .error {
     color: #ef4444;
     margin-bottom: 1rem;
     font-size: 0.875rem;
     display: none;
+}
+
+.hidden {
+    display: none;
+}
+
+.odometer-input {
+    width: 100%;
+}
+
+.input-field {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.input-field:focus {
+    border-color: #22c55e;
 }

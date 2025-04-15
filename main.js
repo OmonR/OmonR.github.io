@@ -14,9 +14,28 @@ const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const captureButton = document.getElementById('captureButton');
 const cameraError = document.getElementById('camera-error');
+const backButton = document.getElementById('backButton');
+const odometerInput = document.getElementById('odometerInput');
+const odometer = document.getElementById('odometer');
 
 let currentMarker = null;
 let stream = null;
+let photoTaken = false;
+
+// Initialize marker with dragging enabled
+function createDraggableMarker(latlng) {
+    if (currentMarker) {
+        map.removeLayer(currentMarker);
+    }
+    currentMarker = L.marker(latlng, { draggable: true }).addTo(map)
+        .bindPopup('Перетащите маркер для указания точного местоположения')
+        .openPopup();
+}
+
+// Add click handler to map for marker placement
+map.on('click', (e) => {
+    createDraggableMarker(e.latlng);
+});
 
 // Navigation
 function switchView(view) {
@@ -51,19 +70,9 @@ locationButton.addEventListener('click', () => {
         (position) => {
             const { latitude, longitude } = position.coords;
             
-            // Update map
-            if (currentMarker) {
-                map.removeLayer(currentMarker);
-            }
-            currentMarker = L.marker([latitude, longitude]).addTo(map)
-                .bindPopup('Вы здесь')
-                .openPopup();
+            // Create draggable marker at current location
+            createDraggableMarker([latitude, longitude]);
             map.setView([latitude, longitude], 15);
-
-            // Send to Telegram WebApp
-            if (window.Telegram?.WebApp) {
-                window.Telegram.WebApp.sendData(JSON.stringify({ latitude, longitude }));
-            }
 
             // Switch to camera view
             switchView('camera');
@@ -79,6 +88,10 @@ locationButton.addEventListener('click', () => {
 
 // Camera handling
 async function startCamera() {
+    if (photoTaken) {
+        resetCameraView();
+    }
+    
     try {
         stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: 'environment' }
@@ -86,6 +99,10 @@ async function startCamera() {
         video.srcObject = stream;
         captureButton.disabled = false;
         cameraError.style.display = 'none';
+        
+        // Show video, hide canvas
+        video.style.display = 'block';
+        canvas.style.display = 'none';
     } catch (err) {
         cameraError.textContent = 'Ошибка доступа к камере. Пожалуйста, предоставьте разрешение.';
         cameraError.style.display = 'block';
@@ -100,6 +117,17 @@ function stopCamera() {
     }
     video.srcObject = null;
     captureButton.disabled = true;
+    resetCameraView();
+}
+
+function resetCameraView() {
+    photoTaken = false;
+    video.style.display = 'block';
+    canvas.style.display = 'none';
+    captureButton.style.display = 'block';
+    odometerInput.classList.add('hidden');
+    backButton.classList.add('hidden');
+    odometer.value = '';
 }
 
 captureButton.addEventListener('click', () => {
@@ -112,12 +140,31 @@ captureButton.addEventListener('click', () => {
         // Draw the current video frame
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        // Convert to data URL and send
-        const imageData = canvas.toDataURL('image/png');
-        if (window.Telegram?.WebApp) {
-            window.Telegram.WebApp.sendData(imageData);
+        // Stop the video stream and hide video element
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
         }
+        video.style.display = 'none';
+        canvas.style.display = 'block';
+
+        // Show odometer input and back button, hide capture button
+        captureButton.style.display = 'none';
+        odometerInput.classList.remove('hidden');
+        backButton.classList.remove('hidden');
+
+        photoTaken = true;
     }
+});
+
+backButton.addEventListener('click', () => {
+    startCamera();
+});
+
+// Handle odometer input
+odometer.addEventListener('input', (e) => {
+    // Ensure only numbers are entered
+    e.target.value = e.target.value.replace(/[^0-9]/g, '');
 });
 
 // Initial view
