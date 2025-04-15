@@ -55,7 +55,7 @@
     <!-- Камера -->
     <div id="camera-container">
         <video id="video" autoplay></video>
-        <button id="take-photo">Сделать фото</button>
+        <button id="take-photo" disabled>Сделать фото</button>
         <canvas id="canvas" style="display:none;"></canvas>
     </div>
 
@@ -76,6 +76,7 @@
                     var lat = position.coords.latitude;
                     var lon = position.coords.longitude;
 
+                    // Добавляем маркер на карту
                     L.marker([lat, lon]).addTo(map)
                         .bindPopup("Вы здесь")
                         .openPopup();
@@ -107,7 +108,7 @@
             navigator.mediaDevices.getUserMedia({ video: true })
                 .then(function(stream) {
                     document.getElementById('video').srcObject = stream;
-                    document.getElementById('take-photo').disabled = false; // Включаем кнопку
+                    document.getElementById('take-photo').disabled = false; // Включаем кнопку "Сделать фото"
                 })
                 .catch(function(error) {
                     alert("Ошибка доступа к камере: " + error.message);
@@ -124,9 +125,9 @@
             canvas.height = video.videoHeight;
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             
-            // Можно отправить изображение в Telegram Web App
+            // Отправка изображения в Telegram Web App
             var imageData = canvas.toDataURL('image/png');
-            window.Telegram.WebApp.sendData(imageData);  // Отправка изображения (или других данных)
+            window.Telegram.WebApp.sendData(imageData);  // Отправка изображения в Telegram
         });
 
     </script>
