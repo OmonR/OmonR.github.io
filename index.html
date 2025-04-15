@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Геопозиция</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+</head>
+<body>
+    <div id="map" style="height: 400px;"></div>
+    <button id="send-location">Я здесь</button>
+
+    <script>
+        // Инициализация карты
+        var map = L.map('map').setView([55.7558, 37.6173], 13);  // Стандартная начальная геопозиция (Москва)
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Получение текущей геопозиции пользователя
+        map.locate({setView: true, maxZoom: 16});
+
+        map.on('locationfound', function(e) {
+            L.marker(e.latlng).addTo(map)
+                .bindPopup("Вы здесь")
+                .openPopup();
+        });
+
+        // Обработчик кнопки "Я здесь"
+        document.getElementById('send-location').addEventListener('click', function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var lat = position.coords.latitude;
+                    var lon = position.coords.longitude;
+
+                    // Отправить геопозицию обратно в Telegram
+                    window.Telegram.WebApp.sendData(JSON.stringify({ latitude: lat, longitude: lon }));
+                });
+            }
+        });
+    </script>
+</body>
+</html>
