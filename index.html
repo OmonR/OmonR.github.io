@@ -1,138 +1,51 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Геопозиция и Камера</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-        }
-        #map {
-            width: 100%;
-            height: 300px;
-            margin-bottom: 20px;
-        }
-        #send-location, #take-photo {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        #take-photo:disabled {
-            background-color: gray;
-            cursor: not-allowed;
-        }
-        #error-message {
-            color: red;
-            display: none;
-        }
-        #camera-container {
-            margin-top: 20px;
-            display: none;
-        }
-        #video {
-            width: 100%;
-            height: auto;
-            border: 1px solid #ddd;
-            margin-bottom: 10px;
-        }
-    </style>
+    <title>Camera and Map Application</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="container">
+        <!-- Navigation -->
+        <div class="nav-buttons">
+            <button id="mapButton" class="nav-button active">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 1.892.402 3.13 1.5 4.5L12 22l6.5-7.5c1.098-1.37 1.5-2.608 1.5-4.5a8 8 0 0 0-8-8Z"/></svg>
+                Карта
+            </button>
+            <button id="cameraButton" class="nav-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                Камера
+            </button>
+        </div>
 
-    <!-- Геопозиция -->
-    <div id="map"></div>
-    <button id="send-location">Я здесь</button>
-    <p id="error-message">Пожалуйста, разрешите доступ к вашей геопозиции для корректной работы.</p>
+        <!-- Map View -->
+        <div id="mapView" class="view active">
+            <div id="map"></div>
+            <p id="error-message" class="error"></p>
+            <button id="locationButton" class="action-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 1.892.402 3.13 1.5 4.5L12 22l6.5-7.5c1.098-1.37 1.5-2.608 1.5-4.5a8 8 0 0 0-8-8Z"/></svg>
+                Я здесь
+            </button>
+        </div>
 
-    <!-- Камера -->
-    <div id="camera-container">
-        <video id="video" autoplay></video>
-        <button id="take-photo" disabled>Сделать фото</button>
-        <canvas id="canvas" style="display:none;"></canvas>
+        <!-- Camera View -->
+        <div id="cameraView" class="view">
+            <div class="camera-container">
+                <video id="video" autoplay playsinline></video>
+                <canvas id="canvas"></canvas>
+            </div>
+            <p id="camera-error" class="error"></p>
+            <button id="captureButton" class="action-button" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                Сделать фото
+            </button>
+        </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script type="text/javascript" src="https://telegram.org/js/telegram-web-app.js"></script>
-
-    <script>
-        // Инициализация карты
-        var map = L.map('map').setView([55.7558, 37.6173], 13);  // Москва как начальная точка
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-
-        function getLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    var lat = position.coords.latitude;
-                    var lon = position.coords.longitude;
-
-                    // Добавляем маркер на карту
-                    L.marker([lat, lon]).addTo(map)
-                        .bindPopup("Вы здесь")
-                        .openPopup();
-
-                    // Отправка геопозиции в Telegram Web App
-                    window.Telegram.WebApp.sendData(JSON.stringify({ latitude: lat, longitude: lon }));
-
-                    // Переход к следующей странице
-                    document.getElementById('send-location').style.display = 'none'; // Скрываем кнопку
-                    document.getElementById('camera-container').style.display = 'block'; // Показываем камеру
-                    startCamera(); // Запускаем камеру
-                }, function(error) {
-                    if (error.code === error.PERMISSION_DENIED) {
-                        document.getElementById("error-message").style.display = "block"; // Показываем сообщение об ошибке
-                    }
-                });
-            } else {
-                alert("Геолокация не поддерживается вашим браузером.");
-            }
-        }
-
-        // Включаем получение геопозиции при нажатии кнопки
-        document.getElementById('send-location').addEventListener('click', function() {
-            getLocation();
-        });
-
-        // Запуск камеры с использованием задней камеры
-        function startCamera() {
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-                .then(function(stream) {
-                    document.getElementById('video').srcObject = stream;
-                    document.getElementById('take-photo').disabled = false; // Включаем кнопку "Сделать фото"
-                })
-                .catch(function(error) {
-                    alert("Ошибка доступа к камере: " + error.message);
-                });
-        }
-
-        // Сделать фото
-        document.getElementById('take-photo').addEventListener('click', function() {
-            var video = document.getElementById('video');
-            var canvas = document.getElementById('canvas');
-            var ctx = canvas.getContext('2d');
-            
-            // Устанавливаем размер canvas в соответствие с видео
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-
-            // Рисуем текущий кадр с видео на canvas
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            // Отправка изображения в Telegram Web App
-            var imageData = canvas.toDataURL('image/png');
-            window.Telegram.WebApp.sendData(imageData);  // Отправка изображения в Telegram
-        });
-
-    </script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script type="module" src="/main.js"></script>
 </body>
 </html>
