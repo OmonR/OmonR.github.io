@@ -3,27 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camera and Map Application</title>
+    <title>Car Sharing App</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <!-- Navigation -->
-        <div class="nav-buttons">
-            <button id="mapButton" class="nav-button active">
+        <nav class="nav-tabs">
+            <button class="nav-button active" data-view="map">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 1.892.402 3.13 1.5 4.5L12 22l6.5-7.5c1.098-1.37 1.5-2.608 1.5-4.5a8 8 0 0 0-8-8Z"/></svg>
-                Карта
+                Map
             </button>
-            <button id="cameraButton" class="nav-button">
+            <button class="nav-button" data-view="camera">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-                Камера
+                Camera
             </button>
-            <button id="sessionButton" class="nav-button">
+            <button class="nav-button" data-view="session">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
-                Фотосессия
+                Photos
             </button>
-        </div>
+        </nav>
 
         <!-- Map View -->
         <div id="mapView" class="view active">
@@ -31,11 +30,10 @@
             <p id="error-message" class="error"></p>
             <button id="locationButton" class="action-button">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 1.892.402 3.13 1.5 4.5L12 22l6.5-7.5c1.098-1.37 1.5-2.608 1.5-4.5a8 8 0 0 0-8-8Z"/></svg>
-                Я здесь
+                I'm here
             </button>
             <button id="continueButton" class="action-button secondary hidden">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                Продолжить
+                Continue
             </button>
         </div>
 
@@ -46,32 +44,39 @@
                 <canvas id="canvas"></canvas>
                 <div class="camera-controls">
                     <button id="captureButton" class="capture-button" disabled>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+                        <div class="capture-button-inner"></div>
                     </button>
                 </div>
             </div>
             <p id="camera-error" class="error"></p>
             <div id="odometerInput" class="odometer-input hidden">
-                <input type="number" id="odometer" placeholder="Введите показания одометра" class="input-field">
+                <input type="number" 
+                       id="odometer" 
+                       placeholder="Enter odometer reading" 
+                       class="input-field"
+                       inputmode="numeric"
+                       pattern="[0-9]*">
+                <button id="continueToPhotos" class="action-button" disabled>
+                    Continue
+                </button>
             </div>
             <button id="backButton" class="action-button secondary hidden">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                Назад
+                Back
             </button>
         </div>
 
         <!-- Session View -->
         <div id="sessionView" class="view">
             <div class="session-header">
-                <h2>Фотосессия</h2>
-                <p id="photoCounter">0 из 4 фото</p>
+                <h2>Car Photos</h2>
+                <p id="photoCounter">0 of 4 photos taken</p>
             </div>
             <div class="camera-container">
                 <video id="sessionVideo" autoplay playsinline></video>
                 <canvas id="sessionCanvas"></canvas>
                 <div class="camera-controls">
                     <button id="sessionCaptureButton" class="capture-button" disabled>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+                        <div class="capture-button-inner"></div>
                     </button>
                 </div>
             </div>
@@ -80,7 +85,6 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script type="module" src="/main.js"></script>
+    <script src="main.js"></script>
 </body>
 </html>
