@@ -147,7 +147,7 @@ function resetCameraView() {
 }
 
 function updateSessionUI() {
-    photoCounter.textContent = `${sessionPhotos.length} of ${REQUIRED_PHOTOS} photos taken`;
+    photoCounter.textContent = `${sessionPhotos.length} из ${REQUIRED_PHOTOS} фото`;
     
     // Update photo grid
     photoGrid.innerHTML = '';
@@ -217,10 +217,10 @@ sessionCaptureButton.addEventListener('click', () => {
     showNotification(`Photo ${sessionPhotos.length} of ${REQUIRED_PHOTOS} taken`);
     
     if (sessionPhotos.length === REQUIRED_PHOTOS) {
-        showNotification('All photos taken!');
+        showNotification('📤 Отправка данных...');
         setTimeout(() => {
-            switchView('map');
-        }, 1500);
+            sendSessionData();
+        }, 1000);
     } else {
         setTimeout(() => {
             startCamera('session');
@@ -246,6 +246,48 @@ continueToPhotos.addEventListener('click', () => {
         switchView('session');
     }
 });
+
+async function sendSessionData() {
+    const initData = Telegram.WebApp.initData;
+    if (!initData) {
+        showError("❌ Не удалось получить данные Telegram.");
+        return;
+    }
+
+    const marker = currentMarker?.getLatLng?.();
+    if (!marker) {
+        showError("❌ Координаты не выбраны.");
+        return;
+    }
+
+    const sessionPayload = {
+        latitude: marker.lat,
+        longitude: marker.lng,
+        odometer: Number(odometer.value),
+        photos: sessionPhotos,
+        init_data: initData
+    };
+
+    try {
+        const res = await fetch("https://gtlauto-gthost.amvera.io/api/report", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(sessionPayload)
+        });
+
+        const result = await res.json();
+
+        if (res.ok && result.status === "ok") {
+            showNotification(result.message || "✅ Сессия успешно завершена");
+            setTimeout(() => Telegram.WebApp.close(), 3000);
+        } else {
+            showError(result.detail || "❌ Ошибка при отправке. Попробуйте снова.");
+        }
+    } catch (err) {
+        showError("⚠️ Ошибка соединения. Попробуйте снова.");
+        console.error(err);
+    }
+}
 
 // Initialize
 switchView('map');
