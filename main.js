@@ -153,7 +153,9 @@ captureButton.addEventListener('click', () => {
 
 sessionCaptureButton.addEventListener('click', () => {
     const photoData = capturePhoto(sessionVideo, sessionCanvas);
-    sessionPhotos.push(photoData);
+    if (sessionPhotos.length < REQUIRED_PHOTOS) {
+        sessionPhotos.push(photoData);
+    }
     updateSessionUI();
 
     if (sessionPhotos.length === REQUIRED_PHOTOS) {

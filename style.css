@@ -140,14 +140,14 @@ body {
     transition: all 0.2s ease;
 }
 
-/* .capture-button:disabled {
+.capture-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
 .capture-button:not(:disabled):hover .capture-button-inner {
     background: #f0f0f0;
-} */
+}
 
 .action-button {
     margin: 16px;
