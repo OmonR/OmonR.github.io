@@ -31,18 +31,19 @@ let sessionPhotos = [];
 const REQUIRED_PHOTOS = 4;
 
 function checkTelegramContext() {
-    // The Telegram WebApp JS object
     const initDataUnsafe = Telegram.WebApp?.initDataUnsafe;
 
-    if (!initDataUnsafe || !initDataUnsafe.user || !initDataUnsafe.start_param) {
-        // If anything critical is missing, show forbidden
+    if (!initDataUnsafe || !initDataUnsafe.user || !Telegram.WebApp.initData) {
+        // Показываем страницу "forbidden", если вообще не из Telegram
         document.querySelector('.container').style.display = 'none';
         document.getElementById('forbiddenPage').classList.remove('hidden');
-    } else {
-        // Log for debugging
-        console.log("User ID:", initDataUnsafe.user.id);
-        console.log("Car ID:", initDataUnsafe.start_param);
+        return;
     }
+
+    // Показываем отладочную информацию
+    console.log("✅ Telegram initData получен:");
+    console.log("User ID:", initDataUnsafe.user.id);
+    console.log("Car ID:", initDataUnsafe.start_param);
 }
 
 // Call this function as soon as the script runs or on DOM ready
