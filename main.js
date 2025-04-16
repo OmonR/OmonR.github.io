@@ -1,10 +1,12 @@
-// Initialize map
+// ----------------- main.js -----------------
+
+// Инициализация карты
 const map = L.map('map').setView([51.505, -0.09], 13);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
-// DOM Elements
+// DOM элементы
 const navButtons = document.querySelectorAll('.nav-button');
 const views = document.querySelectorAll('.view');
 const locationButton = document.getElementById('locationButton');
@@ -23,25 +25,14 @@ const sessionCaptureButton = document.getElementById('sessionCaptureButton');
 const photoCounter = document.getElementById('photoCounter');
 const photoGrid = document.getElementById('photoGrid');
 
-// State
+// Состояние
 let currentMarker = null;
 let stream = null;
 let photoTaken = false;
 let sessionPhotos = [];
 const REQUIRED_PHOTOS = 4;
 
-function checkTelegramContext() {
-    // Ensure the app is running inside Telegram's WebApp context
-    if (!Telegram.WebApp?.initData) {
-        // Not in Telegram environment: hide main content and show "forbidden" message
-        document.querySelector('.container').style.display = 'none';
-        document.getElementById('forbiddenPage').classList.remove('hidden');
-    } else {
-        console.log("Telegram WebApp context detected.");
-    }
-}
-
-// Navigation
+// Навигация
 navButtons.forEach(button => {
     button.addEventListener('click', () => {
         const view = button.dataset.view;
@@ -50,30 +41,25 @@ navButtons.forEach(button => {
 });
 
 function switchView(view) {
-    // Update buttons
     navButtons.forEach(btn => {
         btn.classList.toggle('active', btn.dataset.view === view);
     });
-    
-    // Update views
     views.forEach(v => {
         v.classList.toggle('active', v.id === `${view}View`);
     });
 
-    // Handle camera
     if (view === 'camera' || view === 'session') {
         startCamera(view);
     } else {
         stopCamera();
     }
 
-    // Update session UI
     if (view === 'session') {
         updateSessionUI();
     }
 }
 
-// Map handling
+// Обработка карты
 function createDraggableMarker(latlng) {
     if (currentMarker) {
         map.removeLayer(currentMarker);
@@ -82,9 +68,7 @@ function createDraggableMarker(latlng) {
     continueButton.classList.remove('hidden');
 }
 
-map.on('click', (e) => {
-    createDraggableMarker(e.latlng);
-});
+map.on('click', e => createDraggableMarker(e.latlng));
 
 locationButton.addEventListener('click', () => {
     if (!navigator.geolocation) {
@@ -93,14 +77,11 @@ locationButton.addEventListener('click', () => {
     }
 
     navigator.geolocation.getCurrentPosition(
-        (position) => {
-            const { latitude, longitude } = position.coords;
-            createDraggableMarker([latitude, longitude]);
-            map.setView([latitude, longitude], 15);
+        ({ coords }) => {
+            createDraggableMarker([coords.latitude, coords.longitude]);
+            map.setView([coords.latitude, coords.longitude], 15);
         },
-        () => {
-            showError('Please enable location services to continue.');
-        }
+        () => showError('Please enable location services to continue.')
     );
 });
 
@@ -109,23 +90,20 @@ function showError(message) {
     errorMessage.style.display = 'block';
 }
 
-// Camera handling
+// Камера
 async function startCamera(view) {
     const videoElement = view === 'session' ? sessionVideo : video;
     const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
-    
-    if (photoTaken) {
-        resetCameraView();
-    }
-    
+
+    if (photoTaken) resetCameraView();
+
     try {
         stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: 'environment' }
         });
         videoElement.srcObject = stream;
         captureBtn.disabled = false;
-        
-        // Show video, hide canvas
+
         videoElement.style.display = 'block';
         (view === 'session' ? sessionCanvas : canvas).style.display = 'none';
     } catch (err) {
@@ -139,12 +117,8 @@ function stopCamera() {
         stream.getTracks().forEach(track => track.stop());
         stream = null;
     }
-    [video, sessionVideo].forEach(v => {
-        if (v) v.srcObject = null;
-    });
-    [captureButton, sessionCaptureButton].forEach(btn => {
-        if (btn) btn.disabled = true;
-    });
+    [video, sessionVideo].forEach(v => v.srcObject = null);
+    [captureButton, sessionCaptureButton].forEach(btn => btn.disabled = true);
 }
 
 function resetCameraView() {
@@ -157,60 +131,17 @@ function resetCameraView() {
     odometer.value = '';
 }
 
-function updateSessionUI() {
-    photoCounter.textContent = `${sessionPhotos.length} из ${REQUIRED_PHOTOS} фото`;
-    
-    // Update photo grid
-    photoGrid.innerHTML = '';
-    
-    // Create slots for all photos
-    for (let i = 0; i < REQUIRED_PHOTOS; i++) {
-        const slot = document.createElement('div');
-        slot.className = `photo-slot ${sessionPhotos[i] ? 'filled' : 'empty'}`;
-        
-        if (sessionPhotos[i]) {
-            const img = document.createElement('img');
-            img.src = sessionPhotos[i];
-            img.alt = `Photo ${i + 1}`;
-            slot.appendChild(img);
-        } else {
-            slot.textContent = i + 1;
-        }
-        
-        photoGrid.appendChild(slot);
-    }
-}
-
-function showNotification(message) {
-    const notification = document.createElement('div');
-    notification.className = 'notification';
-    notification.textContent = message;
-    document.body.appendChild(notification);
-
-    // Force reflow
-    notification.offsetHeight;
-    notification.classList.add('show');
-
-    setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => {
-            notification.remove();
-        }, 300);
-    }, 2000);
-}
-
-// Capture photo
+// Захват фото
 function capturePhoto(video, canvas) {
-    const context = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     return canvas.toDataURL('image/jpeg');
 }
 
 captureButton.addEventListener('click', () => {
     const photoData = capturePhoto(video, canvas);
-    
     stopCamera();
     video.style.display = 'none';
     canvas.style.display = 'block';
@@ -224,54 +155,74 @@ sessionCaptureButton.addEventListener('click', () => {
     const photoData = capturePhoto(sessionVideo, sessionCanvas);
     sessionPhotos.push(photoData);
     updateSessionUI();
-    
-    showNotification(`Photo ${sessionPhotos.length} of ${REQUIRED_PHOTOS} taken`);
-    
+
     if (sessionPhotos.length === REQUIRED_PHOTOS) {
         showNotification('📤 Отправка данных...');
-        setTimeout(() => {
-            sendSessionData();
-        }, 1000);
+        setTimeout(() => sendSessionData(), 1000);
     } else {
-        setTimeout(() => {
-            startCamera('session');
-        }, 500);
+        setTimeout(() => startCamera('session'), 500);
     }
 });
 
-// Navigation handlers
-continueButton.addEventListener('click', () => {
-    switchView('camera');
-});
-
-backButton.addEventListener('click', () => {
-    startCamera('camera');
-});
+continueButton.addEventListener('click', () => switchView('camera'));
+backButton.addEventListener('click', () => startCamera('camera'));
 
 odometer.addEventListener('input', () => {
     continueToPhotos.disabled = !odometer.value;
 });
 
 continueToPhotos.addEventListener('click', () => {
-    if (odometer.value) {
-        switchView('session');
-    }
+    if (odometer.value) switchView('session');
 });
 
+function updateSessionUI() {
+    photoCounter.textContent = `${sessionPhotos.length} из ${REQUIRED_PHOTOS} фото`;
+    photoGrid.innerHTML = '';
+    for (let i = 0; i < REQUIRED_PHOTOS; i++) {
+        const slot = document.createElement('div');
+        slot.className = `photo-slot ${sessionPhotos[i] ? 'filled' : 'empty'}`;
+        if (sessionPhotos[i]) {
+            const img = document.createElement('img');
+            img.src = sessionPhotos[i];
+            img.alt = `Photo ${i + 1}`;
+            slot.appendChild(img);
+        } else {
+            slot.textContent = i + 1;
+        }
+        photoGrid.appendChild(slot);
+    }
+}
+
+function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    notification.offsetHeight;
+    notification.classList.add('show');
+
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 2000);
+}
+
+// Отправка данных на сервер
 async function sendSessionData() {
-    const initData = Telegram.WebApp.initData;
+    const initData = Telegram.WebApp?.initData;
     if (!initData) {
-        showError("❌ Не удалось получить данные Telegram.");
+        showError('❌ Не удалось получить данные Telegram.');
         return;
     }
 
     const marker = currentMarker?.getLatLng?.();
     if (!marker) {
-        showError("❌ Координаты не выбраны.");
+        showError('❌ Координаты не выбраны.');
         return;
     }
 
-    const sessionPayload = {
+    const payload = {
         latitude: marker.lat,
         longitude: marker.lng,
         odometer: Number(odometer.value),
@@ -280,25 +231,24 @@ async function sendSessionData() {
     };
 
     try {
-        const res = await fetch("https://gtlauto-gthost.amvera.io/api/report", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(sessionPayload)
+        const res = await fetch('https://gtlauto-gthost.amvera.io/api/report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
         });
-
         const result = await res.json();
 
-        if (res.ok && result.status === "ok") {
-            showNotification(result.message || "✅ Сессия успешно завершена");
+        if (res.ok && result.status === 'ok') {
+            showNotification(result.message || '✅ Сессия завершена');
             setTimeout(() => Telegram.WebApp.close(), 3000);
         } else {
-            showError(result.detail || "❌ Ошибка при отправке. Попробуйте снова.");
+            showError(result.detail || '❌ Ошибка при отправке');
         }
     } catch (err) {
-        showError("⚠️ Ошибка соединения. Попробуйте снова.");
+        showError('⚠️ Ошибка соединения');
         console.error(err);
     }
 }
 
-// Initialize
+// Запуск
 switchView('map');
