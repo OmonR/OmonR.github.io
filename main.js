@@ -30,6 +30,24 @@ let photoTaken = false;
 let sessionPhotos = [];
 const REQUIRED_PHOTOS = 4;
 
+function checkTelegramContext() {
+    // The Telegram WebApp JS object
+    const initDataUnsafe = Telegram.WebApp?.initDataUnsafe;
+
+    if (!initDataUnsafe || !initDataUnsafe.user || !initDataUnsafe.start_param) {
+        // If anything critical is missing, show forbidden
+        document.querySelector('.container').style.display = 'none';
+        document.getElementById('forbiddenPage').classList.remove('hidden');
+    } else {
+        // Log for debugging
+        console.log("User ID:", initDataUnsafe.user.id);
+        console.log("Car ID:", initDataUnsafe.start_param);
+    }
+}
+
+// Call this function as soon as the script runs or on DOM ready
+checkTelegramContext();
+
 // Navigation
 navButtons.forEach(button => {
     button.addEventListener('click', () => {

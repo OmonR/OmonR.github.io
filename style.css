@@ -286,3 +286,25 @@ body {
     transform: translateX(-50%) translateY(0);
     opacity: 1;
 }
+
+.forbidden {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+    height: 100vh;
+    background: #fff;
+    text-align: center;
+}
+
+.forbidden h1 {
+    font-size: 32px;
+    margin-bottom: 16px;
+    color: #ef4444; /* A red tone */
+}
+
+.forbidden p {
+    font-size: 18px;
+    color: #374151;
+}
