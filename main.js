@@ -214,13 +214,15 @@ function showNotification(message) {
 async function sendSessionData() {
     const initData = Telegram.WebApp?.initData;
     if (!initData) {
-        showError('❌ Не удалось получить данные Telegram.');
+        errorMessage.textContent = '❌ Не удалось получить данные Telegram.';
+        errorMessage.style.display = 'block';
         return;
     }
 
     const marker = currentMarker?.getLatLng?.();
     if (!marker) {
-        showError('❌ Координаты не выбраны.');
+        errorMessage.textContent = '❌ Координаты не выбраны.';
+        errorMessage.style.display = 'block';
         return;
     }
 
@@ -238,16 +240,19 @@ async function sendSessionData() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
+
         const result = await res.json();
 
         if (res.ok && result.status === 'ok') {
             showNotification(result.message || '✅ Сессия завершена');
             setTimeout(() => Telegram.WebApp.close(), 3000);
         } else {
-            showError(result.detail || '❌ Ошибка при отправке');
+            errorMessage.textContent = result.detail || '❌ Ошибка при отправке';
+            errorMessage.style.display = 'block';
         }
     } catch (err) {
-        showError('⚠️ Ошибка соединения');
+        errorMessage.textContent = '⚠️ Ошибка соединения';
+        errorMessage.style.display = 'block';
         console.error(err);
     }
 }
