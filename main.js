@@ -30,24 +30,24 @@ let photoTaken = false;
 let sessionPhotos = [];
 const REQUIRED_PHOTOS = 4;
 
-function checkTelegramContext() {
-    const initDataUnsafe = Telegram.WebApp?.initDataUnsafe;
+// function checkTelegramContext() {
+//     const initDataUnsafe = Telegram.WebApp?.initDataUnsafe;
 
-    if (!initDataUnsafe || !initDataUnsafe.user || !Telegram.WebApp.initData) {
-        // Показываем страницу "forbidden", если вообще не из Telegram
-        document.querySelector('.container').style.display = 'none';
-        document.getElementById('forbiddenPage').classList.remove('hidden');
-        return;
-    }
+//     if (!initDataUnsafe || !initDataUnsafe.user || !Telegram.WebApp.initData) {
+//         // Показываем страницу "forbidden", если вообще не из Telegram
+//         document.querySelector('.container').style.display = 'none';
+//         document.getElementById('forbiddenPage').classList.remove('hidden');
+//         return;
+//     }
 
-    // Показываем отладочную информацию
-    console.log("✅ Telegram initData получен:");
-    console.log("User ID:", initDataUnsafe.user.id);
-    console.log("Car ID:", initDataUnsafe.start_param);
-}
+//     // Показываем отладочную информацию
+//     console.log("✅ Telegram initData получен:");
+//     console.log("User ID:", initDataUnsafe.user.id);
+//     console.log("Car ID:", initDataUnsafe.start_param);
+// }
 
-// Call this function as soon as the script runs or on DOM ready
-checkTelegramContext();
+// // Call this function as soon as the script runs or on DOM ready
+// checkTelegramContext();
 
 // Navigation
 navButtons.forEach(button => {
