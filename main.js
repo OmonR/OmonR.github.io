@@ -11,14 +11,11 @@ fetch('https://autopark-gthost.amvera.io/api/auth', {
   }
 })
   .then(res => res.json())
-  .then(data => {
-    const userInfo = document.getElementById('user-info');
-    userInfo.textContent = `User ID: ${data.user.id}`;
-  })
   .catch(err => {
     console.error('Auth failed', err);
   });
 
+  alert(initDataRaw)
 // Set theme variables from Telegram theme params
 const root = document.documentElement;
 const params = webapp.themeParams;
