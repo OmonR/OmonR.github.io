@@ -1,15 +1,13 @@
+// 1. Initialize Telegram WebApp
 const webapp = window.Telegram.WebApp;
 webapp.ready();
 
-// Получаем подписанную строку initData
+// Get signed initData string
 const initDataRaw = webapp.initData;
 
-const map = L.map('map').setView([51.505, -0.09], 13);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-}).addTo(map);
-
+// Set theme variables from Telegram theme params
 const params = webapp.themeParams;
+const root = document.documentElement;
 
 if (params) {
     root.style.setProperty('--tg-theme-bg-color', params.bg_color);
@@ -20,7 +18,7 @@ if (params) {
     root.style.setProperty('--tg-theme-button-text-color', params.button_text_color);
 }
 
-
+// 2. DOM Elements and Variables
 const navButtons = document.querySelectorAll('.nav-button');
 const views = document.querySelectorAll('.view');
 const locationButton = document.getElementById('locationButton');
@@ -42,23 +40,23 @@ const urlParams = new URLSearchParams(window.location.search);
 const carId = urlParams.get('car_id');
 const action = urlParams.get('action') || 'start';
 
-// if (!carId) {
-//     document.body.innerHTML = '<p style="color:red;padding:1rem;">❌</p>';
-//     throw new Error('Missing params');
-// }
-
 let currentMarker = null;
 let stream = null;
 let photoTaken = false;
 let sessionPhotos = [];
 const REQUIRED_PHOTOS = 4;
 
-navButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        const view = button.dataset.view;
-        switchView(view);
-    });
-});
+// 3. Initialize Map
+const map = L.map('map').setView([51.505, -0.09], 13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+// 4. Utility Functions
+function showError(message) {
+    errorMessage.textContent = message;
+    errorMessage.style.display = 'block';
+}
 
 function switchView(view) {
     navButtons.forEach(btn => {
@@ -85,28 +83,6 @@ function createDraggableMarker(latlng) {
     }
     currentMarker = L.marker(latlng, { draggable: true }).addTo(map);
     continueButton.classList.remove('hidden');
-}
-
-map.on('click', e => createDraggableMarker(e.latlng));
-
-locationButton.addEventListener('click', () => {
-    if (!navigator.geolocation) {
-        showError('Geolocation is not supported by your browser.');
-        return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-        ({ coords }) => {
-            createDraggableMarker([coords.latitude, coords.longitude]);
-            map.setView([coords.latitude, coords.longitude], 15);
-        },
-        () => showError('Please enable location services to continue.')
-    );
-});
-
-function showError(message) {
-    errorMessage.textContent = message;
-    errorMessage.style.display = 'block';
 }
 
 async function startCamera(view) {
@@ -156,43 +132,6 @@ function capturePhoto(video, canvas) {
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     return canvas.toDataURL('image/jpeg');
 }
-
-captureButton.addEventListener('click', () => {
-    const photoData = capturePhoto(video, canvas);
-    stopCamera();
-    video.style.display = 'none';
-    canvas.style.display = 'block';
-    captureButton.style.display = 'none';
-    odometerInput.classList.remove('hidden');
-    backButton.classList.remove('hidden');
-    photoTaken = true;
-});
-
-sessionCaptureButton.addEventListener('click', () => {
-    const photoData = capturePhoto(sessionVideo, sessionCanvas);
-    if (sessionPhotos.length < REQUIRED_PHOTOS) {
-        sessionPhotos.push(photoData);
-    }
-    updateSessionUI();
-
-    if (sessionPhotos.length === REQUIRED_PHOTOS) {
-        showNotification('📤 Отправка данных...');
-        setTimeout(() => sendSessionData(), 1000);
-    } else {
-        setTimeout(() => startCamera('session'), 500);
-    }
-});
-
-continueButton.addEventListener('click', () => switchView('camera'));
-backButton.addEventListener('click', () => startCamera('camera'));
-
-odometer.addEventListener('input', () => {
-    continueToPhotos.disabled = !odometer.value;
-});
-
-continueToPhotos.addEventListener('click', () => {
-    if (odometer.value) switchView('session');
-});
 
 function updateSessionUI() {
     photoCounter.textContent = `${sessionPhotos.length} из ${REQUIRED_PHOTOS} фото`;
@@ -287,15 +226,75 @@ async function sendSessionData() {
     }
 }
 
-switchView('map');
-
 function showForbiddenError() {
     document.querySelector('.container').classList.add('hidden');
     document.getElementById('forbiddenPage').classList.remove('hidden');
 }
 
+// 5. Event Listeners
+navButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        const view = button.dataset.view;
+        switchView(view);
+    });
+});
+
+map.on('click', e => createDraggableMarker(e.latlng));
+
+locationButton.addEventListener('click', () => {
+    if (!navigator.geolocation) {
+        showError('Geolocation is not supported by your browser.');
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        ({ coords }) => {
+            createDraggableMarker([coords.latitude, coords.longitude]);
+            map.setView([coords.latitude, coords.longitude], 15);
+        },
+        () => showError('Please enable location services to continue.')
+    );
+});
+
+captureButton.addEventListener('click', () => {
+    const photoData = capturePhoto(video, canvas);
+    stopCamera();
+    video.style.display = 'none';
+    canvas.style.display = 'block';
+    captureButton.style.display = 'none';
+    odometerInput.classList.remove('hidden');
+    backButton.classList.remove('hidden');
+    photoTaken = true;
+});
+
+sessionCaptureButton.addEventListener('click', () => {
+    const photoData = capturePhoto(sessionVideo, sessionCanvas);
+    if (sessionPhotos.length < REQUIRED_PHOTOS) {
+        sessionPhotos.push(photoData);
+    }
+    updateSessionUI();
+
+    if (sessionPhotos.length === REQUIRED_PHOTOS) {
+        showNotification('📤 Отправка данных...');
+        setTimeout(() => sendSessionData(), 1000);
+    } else {
+        setTimeout(() => startCamera('session'), 500);
+    }
+});
+
+continueButton.addEventListener('click', () => switchView('camera'));
+backButton.addEventListener('click', () => startCamera('camera'));
+
+odometer.addEventListener('input', () => {
+    continueToPhotos.disabled = !odometer.value;
+});
+
+continueToPhotos.addEventListener('click', () => {
+    if (odometer.value) switchView('session');
+});
+
+// 6. Initialize Application
 function initApp() {
-    // All your existing app logic goes here
     fetch('https://autopark-gthost.amvera.io/api/auth', {
         method: 'POST',
         headers: {
@@ -306,14 +305,12 @@ function initApp() {
     .catch(err => {
         console.error('Auth failed', err);
     });
-
-    // Set theme variables from Telegram theme params
-    const root = document.documentElement;
 }
 
+// Start the application
 if (!initDataRaw) {
     showForbiddenError();
 } else {
     initApp();
+    switchView('map');
 }
-
