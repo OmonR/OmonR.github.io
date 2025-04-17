@@ -4,26 +4,34 @@ webapp.ready();
 // Получаем подписанную строку initData
 const initDataRaw = webapp.initData;
 
-if (!initDataRaw) {
+function showForbiddenError() {
     document.querySelector('.container').classList.add('hidden');
     document.getElementById('forbiddenPage').classList.remove('hidden');
-    return; // Прекращаем выполнение остального кода
 }
 
-fetch('https://autopark-gthost.amvera.io/api/auth', {
-  method: 'POST',
-  headers: {
-    'Authorization': `tma ${initDataRaw}`
-  }
-})
-  .then(res => res.json())
-  .catch(err => {
-    console.error('Auth failed', err);
-  });
+function initApp() {
+    // All your existing app logic goes here
+    fetch('https://autopark-gthost.amvera.io/api/auth', {
+        method: 'POST',
+        headers: {
+            'Authorization': `tma ${initDataRaw}`
+        }
+    })
+    .then(res => res.json())
+    .catch(err => {
+        console.error('Auth failed', err);
+    });
 
-  alert(initDataRaw)
-// Set theme variables from Telegram theme params
-const root = document.documentElement;
+    // Set theme variables from Telegram theme params
+    const root = document.documentElement;
+}
+
+if (!initDataRaw) {
+    showForbiddenError();
+} else {
+    initApp();
+}
+
 const params = webapp.themeParams;
 
 if (params) {
