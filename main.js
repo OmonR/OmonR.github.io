@@ -1,12 +1,10 @@
 // ----------------- main.js -----------------
 
-// Инициализация карты
 const map = L.map('map').setView([51.505, -0.09], 13);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
-// DOM элементы
 const navButtons = document.querySelectorAll('.nav-button');
 const views = document.querySelectorAll('.view');
 const locationButton = document.getElementById('locationButton');
@@ -25,14 +23,12 @@ const sessionCaptureButton = document.getElementById('sessionCaptureButton');
 const photoCounter = document.getElementById('photoCounter');
 const photoGrid = document.getElementById('photoGrid');
 
-// Состояние
 let currentMarker = null;
 let stream = null;
 let photoTaken = false;
 let sessionPhotos = [];
 const REQUIRED_PHOTOS = 4;
 
-// Навигация
 navButtons.forEach(button => {
     button.addEventListener('click', () => {
         const view = button.dataset.view;
@@ -59,7 +55,6 @@ function switchView(view) {
     }
 }
 
-// Обработка карты
 function createDraggableMarker(latlng) {
     if (currentMarker) {
         map.removeLayer(currentMarker);
@@ -90,7 +85,6 @@ function showError(message) {
     errorMessage.style.display = 'block';
 }
 
-// Камера
 async function startCamera(view) {
     const videoElement = view === 'session' ? sessionVideo : video;
     const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
@@ -106,7 +100,7 @@ async function startCamera(view) {
 
         videoElement.style.display = 'block';
         (view === 'session' ? sessionCanvas : canvas).style.display = 'none';
-    } catch (err) {
+    } catch {
         showError('Camera access denied. Please grant permission.');
         captureBtn.disabled = true;
     }
@@ -131,7 +125,6 @@ function resetCameraView() {
     odometer.value = '';
 }
 
-// Захват фото
 function capturePhoto(video, canvas) {
     const ctx = canvas.getContext('2d');
     canvas.width = video.videoWidth;
@@ -210,7 +203,6 @@ function showNotification(message) {
     }, 2000);
 }
 
-// Отправка данных на сервер
 async function sendSessionData() {
     const initData = Telegram.WebApp?.initData;
     if (!initData) {
@@ -226,16 +218,29 @@ async function sendSessionData() {
         return;
     }
 
+    const odo = Number(odometer.value);
+    if (isNaN(odo) || odo < 0) {
+        errorMessage.textContent = '❌ Пожалуйста, укажите корректный пробег.';
+        errorMessage.style.display = 'block';
+        return;
+    }
+
+    if (sessionPhotos.length !== 4) {
+        errorMessage.textContent = '❌ Необходимо 4 фото.';
+        errorMessage.style.display = 'block';
+        return;
+    }
+
     const payload = {
         latitude: marker.lat,
         longitude: marker.lng,
-        odometer: Number(odometer.value),
+        odometer: odo,
         photos: sessionPhotos,
         init_data: initData
     };
 
     try {
-        const res = await fetch('https://autopark-gthost.amvera.io//api/report', {
+        const res = await fetch('https://autopark-gthost.amvera.io/api/report', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -250,12 +255,10 @@ async function sendSessionData() {
             errorMessage.textContent = result.detail || '❌ Ошибка при отправке';
             errorMessage.style.display = 'block';
         }
-    } catch (err) {
+    } catch {
         errorMessage.textContent = '⚠️ Ошибка соединения';
         errorMessage.style.display = 'block';
-        console.error(err);
     }
 }
 
-// Запуск
 switchView('map');
