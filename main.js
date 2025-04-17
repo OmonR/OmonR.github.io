@@ -9,34 +9,6 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
-function showForbiddenError() {
-    document.querySelector('.container').classList.add('hidden');
-    document.getElementById('forbiddenPage').classList.remove('hidden');
-}
-
-function initApp() {
-    // All your existing app logic goes here
-    fetch('https://autopark-gthost.amvera.io/api/auth', {
-        method: 'POST',
-        headers: {
-            'Authorization': `tma ${initDataRaw}`
-        }
-    })
-    .then(res => res.json())
-    .catch(err => {
-        console.error('Auth failed', err);
-    });
-
-    // Set theme variables from Telegram theme params
-    const root = document.documentElement;
-}
-
-if (!initDataRaw) {
-    showForbiddenError();
-} else {
-    initApp();
-}
-
 const params = webapp.themeParams;
 
 if (params) {
@@ -316,3 +288,32 @@ async function sendSessionData() {
 }
 
 switchView('map');
+
+function showForbiddenError() {
+    document.querySelector('.container').classList.add('hidden');
+    document.getElementById('forbiddenPage').classList.remove('hidden');
+}
+
+function initApp() {
+    // All your existing app logic goes here
+    fetch('https://autopark-gthost.amvera.io/api/auth', {
+        method: 'POST',
+        headers: {
+            'Authorization': `tma ${initDataRaw}`
+        }
+    })
+    .then(res => res.json())
+    .catch(err => {
+        console.error('Auth failed', err);
+    });
+
+    // Set theme variables from Telegram theme params
+    const root = document.documentElement;
+}
+
+if (!initDataRaw) {
+    showForbiddenError();
+} else {
+    initApp();
+}
+
