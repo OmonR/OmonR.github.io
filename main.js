@@ -1,4 +1,19 @@
-// ----------------- main.js -----------------
+// Initialize Telegram WebApp
+const webapp = window.Telegram.WebApp;
+webapp.ready();
+
+// Set theme variables from Telegram theme params
+const root = document.documentElement;
+const params = webapp.themeParams;
+
+if (params) {
+    root.style.setProperty('--tg-theme-bg-color', params.bg_color);
+    root.style.setProperty('--tg-theme-text-color', params.text_color);
+    root.style.setProperty('--tg-theme-hint-color', params.hint_color);
+    root.style.setProperty('--tg-theme-link-color', params.link_color);
+    root.style.setProperty('--tg-theme-button-color', params.button_color);
+    root.style.setProperty('--tg-theme-button-text-color', params.button_text_color);
+}
 
 const map = L.map('map').setView([51.505, -0.09], 13);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -26,11 +41,10 @@ const urlParams = new URLSearchParams(window.location.search);
 const carId = urlParams.get('car_id');
 const action = urlParams.get('action') || 'start';
 
-if (!carId) {
-    document.body.innerHTML = '<p style="color:red;padding:1rem;">❌</p>';
-    throw new Error('Missing params');
-}
-
+// if (!carId) {
+//     document.body.innerHTML = '<p style="color:red;padding:1rem;">❌</p>';
+//     throw new Error('Missing params');
+// }
 
 let currentMarker = null;
 let stream = null;
@@ -250,7 +264,6 @@ async function sendSessionData() {
         init_data: initData
     };
 
-
     try {
         const res = await fetch('https://autopark-gthost.amvera.io/api/report', {
             method: 'POST',
@@ -262,7 +275,7 @@ async function sendSessionData() {
 
         if (res.ok && result.status === 'ok') {
             showNotification(result.message || '✅ Сессия завершена');
-            setTimeout(() => Telegram.WebApp.close(), 3000);
+            setTimeout(() => webapp.close(), 3000);
         } else {
             errorMessage.textContent = result.detail || '❌ Ошибка при отправке';
             errorMessage.style.display = 'block';
