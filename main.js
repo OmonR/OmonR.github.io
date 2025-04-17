@@ -235,7 +235,7 @@ async function sendSessionData() {
     };
 
     try {
-        const res = await fetch('https://gtlauto-gthost.amvera.io/api/report', {
+        const res = await fetch('https://autopark-gthost.amvera.io//api/report', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
