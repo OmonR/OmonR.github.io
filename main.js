@@ -4,6 +4,11 @@ webapp.ready();
 // Получаем подписанную строку initData
 const initDataRaw = webapp.initData;
 
+const map = L.map('map').setView([51.505, -0.09], 13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
 function showForbiddenError() {
     document.querySelector('.container').classList.add('hidden');
     document.getElementById('forbiddenPage').classList.remove('hidden');
@@ -43,10 +48,6 @@ if (params) {
     root.style.setProperty('--tg-theme-button-text-color', params.button_text_color);
 }
 
-const map = L.map('map').setView([51.505, -0.09], 13);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-}).addTo(map);
 
 const navButtons = document.querySelectorAll('.nav-button');
 const views = document.querySelectorAll('.view');
