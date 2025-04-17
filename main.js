@@ -22,6 +22,15 @@ const sessionCanvas = document.getElementById('sessionCanvas');
 const sessionCaptureButton = document.getElementById('sessionCaptureButton');
 const photoCounter = document.getElementById('photoCounter');
 const photoGrid = document.getElementById('photoGrid');
+const urlParams = new URLSearchParams(window.location.search);
+const carId = urlParams.get('car_id');
+const action = urlParams.get('action') || 'start';
+
+if (!carId) {
+    document.body.innerHTML = '<p style="color:red;padding:1rem;">❌</p>';
+    throw new Error('Missing params');
+}
+
 
 let currentMarker = null;
 let stream = null;
