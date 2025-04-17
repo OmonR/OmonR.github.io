@@ -2,6 +2,27 @@
 const webapp = window.Telegram.WebApp;
 webapp.ready();
 
+// 1) Берём подписанную строку initData
+const initData = webapp.initData;
+
+// 2) Отправляем её бэкенду для валидации и получения user.id
+fetch('https://autopark-gthost.amvera.io/api/auth', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ init_data: initData })
+})
+  .then(res => res.json())
+  .then(data => {
+    // 3) Отображаем user_id
+    const userInfo = document.getElementById('user-info');
+    userInfo.textContent = `User ID: ${data.user.id}`;
+  })
+  .catch(err => {
+    console.error('Auth failed', err);
+    // при ошибке можно показать сообщение или перенаправить
+  });
+
+
 // Set theme variables from Telegram theme params
 const root = document.documentElement;
 const params = webapp.themeParams;
