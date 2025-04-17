@@ -4,6 +4,12 @@ webapp.ready();
 // Получаем подписанную строку initData
 const initDataRaw = webapp.initData;
 
+if (!initDataRaw) {
+    document.querySelector('.container').classList.add('hidden');
+    document.getElementById('forbiddenPage').classList.remove('hidden');
+    return; // Прекращаем выполнение остального кода
+}
+
 fetch('https://autopark-gthost.amvera.io/api/auth', {
   method: 'POST',
   headers: {

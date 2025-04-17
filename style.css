@@ -30,16 +30,6 @@ body {
     display: flex;
     flex-direction: column;
 }
-
-.user-info {
-    color: white;
-    font-size: 1.8rem;
-    font-weight: bold;
-    text-align: center;
-    padding: 1rem;
-    background-color: rgba(0, 0, 0, 0.4);
-    border-radius: 10px;
-  }
   
 
 .nav-tabs {
