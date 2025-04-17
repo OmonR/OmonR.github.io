@@ -269,6 +269,12 @@ async function sendSessionData() {
         return;
     }
 
+    const odo = Number(odometer.value);
+    if (isNaN(odo) || odo < 0) {
+        showError("❌ Укажите корректный пробег.");
+        return;
+    }
+
     const sessionPayload = {
         car_id: Number(carId),
         action,
@@ -278,6 +284,7 @@ async function sendSessionData() {
         photos: sessionPhotos,
         init_data: initData
     };
+
 
     try {
         const res = await fetch("https://gtlauto-gthost.amvera.io/api/report", {
