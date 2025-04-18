@@ -3,7 +3,7 @@ const webapp = window.Telegram.WebApp;
 webapp.ready();
 
 // Get signed initData string
-const initDataRaw = webapp.initData;
+const initData = webapp.initData;
 
 // Set theme variables from Telegram theme params
 const params = webapp.themeParams;
@@ -167,7 +167,6 @@ function showNotification(message) {
 }
 
 async function sendSessionData() {
-    const initData = Telegram.WebApp?.initData;
     if (!initData) {
         errorMessage.textContent = '❌ Не удалось получить данные Telegram.';
         errorMessage.style.display = 'block';
@@ -205,7 +204,7 @@ async function sendSessionData() {
         longitude: marker.lng,
         odometer: odo,
         photos: sessionPhotos,
-        init_data: initDataRaw 
+        init_data: initData 
     };
     
     try {
@@ -213,7 +212,7 @@ async function sendSessionData() {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
-                'Authorization': `tma ${initDataRaw}` // Use the raw init data string
+                'Authorization': `tma ${initData}` // Use the raw init data string
             },
             body: JSON.stringify(payload)
         });
@@ -319,7 +318,7 @@ function initApp() {
     fetch('https://autopark-gthost.amvera.io/api/auth', {
         method: 'POST',
         headers: {
-            'Authorization': `tma ${initDataRaw}`
+            'Authorization': `tma ${initData}`
         }
     })
     .then(res => res.json())
@@ -329,7 +328,7 @@ function initApp() {
 }
 
 // Start the application
-if (!initDataRaw) {
+if (!initData) {
     showForbiddenError();
 } else {
     initApp();
