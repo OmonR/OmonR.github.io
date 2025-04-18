@@ -205,13 +205,15 @@ async function sendSessionData() {
         longitude: marker.lng,
         odometer: odo,
         photos: sessionPhotos,
-        init_data: initData
     };
-
+    
     try {
         const res = await fetch('https://autopark-gthost.amvera.io/api/report', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `tma ${initDataRaw}` // Use the raw init data string
+            },
             body: JSON.stringify(payload)
         });
 
