@@ -223,9 +223,9 @@ async function sendSessionData() {
             showNotification(result.message || '✅ Сессия завершена');
 
             if (result.user_id) {
-                alert(`✅ Сессия успешно создана. User ID: ${result.user_id}`);
+                alert(` ${result}`);
             } else {
-                alert('✅ Сессия успешно создана');
+                alert(` ${result}`);
             }
 
             if (action === 'start') {
