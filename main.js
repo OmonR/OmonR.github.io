@@ -222,25 +222,21 @@ async function sendSessionData() {
             body: JSON.stringify(payload)
           });
           
-          let result;
-          try {
-            result = await res.json();
-            alert(JSON.stringify(result, null, 2));
-          } catch (e) {
-            const text = await res.text();
-            console.error("❌ Error parsing JSON:", e);
-            console.warn("🧾 Raw response:", text);
-            alert("⚠️ Response is not valid JSON:\n" + text);
-          }          
-
+        let result;
+        
+        result = await res.json();
 
         if (res.ok && result.status === 'ok') {
-            webapp.sendData(JSON.stringify({
-                chat_id: chatId,
-                msg_id:  msgId,
-                car_id:  carId,
-              }));
-            
+            try {
+                webapp.sendData(JSON.stringify({
+                  chat_id: chatId,
+                  msg_id:  msgId,
+                  car_id:  carId,
+                  action   // добавил, чтобы бот знал, start или end
+                }));
+              } catch (e) {
+                alert("❌ sendData failed:", e);
+              }
 
             if (result.user_id) {
                 alert(`✅`);
@@ -249,7 +245,7 @@ async function sendSessionData() {
             }
 
             if (action === 'start') {
-                setTimeout(() => switchView('map'), 2000);
+                setTimeout(() => webapp.close(), 1000);
             } else if (action === 'end') {
                 setTimeout(() => webapp.close(), 3000);
             }
