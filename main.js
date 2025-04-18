@@ -12,16 +12,24 @@ const root = document.documentElement;
 
 const res = await fetch('https://autopark-gthost.amvera.io/api/report', {
     method: 'POST',
-    headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `tma ${initData}` // Use the raw init data string
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `tma ${initData}`
     },
     body: JSON.stringify(payload)
-});
-
-const result = await res.json();
-
-alert(JSON.stringify(result, null, 2))
+  });
+  
+  let result;
+  try {
+    result = await res.json();
+    alert(JSON.stringify(result, null, 2));
+  } catch (e) {
+    const text = await res.text();
+    console.error("❌ Error parsing JSON:", e);
+    console.warn("🧾 Raw response:", text);
+    alert("⚠️ Response is not valid JSON:\n" + text);
+  }
+  
 
 
 if (params) {
@@ -225,15 +233,23 @@ async function sendSessionData() {
     try {
         const res = await fetch('https://autopark-gthost.amvera.io/api/report', {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `tma ${initData}` // Use the raw init data string
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `tma ${initData}`
             },
             body: JSON.stringify(payload)
-        });
-
-        const result = await res.json();
-        alert(JSON.stringify(result, null, 2))
+          });
+          
+          let result;
+          try {
+            result = await res.json();
+            alert(JSON.stringify(result, null, 2));
+          } catch (e) {
+            const text = await res.text();
+            console.error("❌ Error parsing JSON:", e);
+            console.warn("🧾 Raw response:", text);
+            alert("⚠️ Response is not valid JSON:\n" + text);
+          }          
 
 
         if (res.ok && result.status === 'ok') {
