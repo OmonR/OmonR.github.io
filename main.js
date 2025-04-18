@@ -1,4 +1,4 @@
-// 1. Initialize Telegram WebApp
+
 const webapp = window.Telegram.WebApp;
 webapp.ready();
 
@@ -39,7 +39,10 @@ const sessionCaptureButton = document.getElementById('sessionCaptureButton');
 const photoCounter = document.getElementById('photoCounter');
 const photoGrid = document.getElementById('photoGrid');
 const urlParams = new URLSearchParams(window.location.search);
-const carId = urlParams.get('car_id');
+const chatId = urlParams.get('chat_id');
+const msgId  = urlParams.get('msg_id');
+const carId  = urlParams.get('car_id');
+
 const action = urlParams.get('action') || 'start';
 
 let currentMarker = null;
@@ -232,10 +235,15 @@ async function sendSessionData() {
 
 
         if (res.ok && result.status === 'ok') {
-            showNotification(result.message || '✅ Сессия завершена');
+            webapp.sendData(JSON.stringify({
+                chat_id: chatId,
+                msg_id:  msgId,
+                car_id:  carId,
+              }));
+            
 
             if (result.user_id) {
-                alert(`✅ Сессия успешно создана. User ID: ${result.user_id}`);
+                alert(`✅`);
             } else {
                 alert('✅ Сессия успешно создана');
             }
