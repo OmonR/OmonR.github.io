@@ -9,28 +9,7 @@ const initData = webapp.initData;
 const params = webapp.themeParams;
 const root = document.documentElement;
 
-
-const res = await fetch('https://autopark-gthost.amvera.io/api/report', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `tma ${initData}`
-    },
-    body: JSON.stringify(payload)
-  });
-  
-  let result;
-  try {
-    result = await res.json();
-    alert(JSON.stringify(result, null, 2));
-  } catch (e) {
-    const text = await res.text();
-    console.error("❌ Error parsing JSON:", e);
-    console.warn("🧾 Raw response:", text);
-    alert("⚠️ Response is not valid JSON:\n" + text);
-  }
-  
-
+alert(initData)
 
 if (params) {
     root.style.setProperty('--tg-theme-bg-color', params.bg_color);
