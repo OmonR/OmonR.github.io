@@ -172,18 +172,22 @@ function showNotification(message) {
 }
 
 async function notifyServer(eventPayload) {
-    const body = {
-      chat_id: chatId,
-      message_id: msgId,
-      event: eventPayload,   // любое ваше содержание
-    };
-    await fetch('https://autopark-gthost.amvera.io/api/webapp/callback', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    // по желанию закрываем WebApp:
-    webapp.close();
+    const body = { chat_id: chatId, message_id: msgId, event: eventPayload };
+    try {
+      const res = await fetch('https://…/api/webapp/callback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      console.log('Callback response:', json);
+    } catch (err) {
+      console.error('Callback error:', err);
+      showError('Не удалось уведомить бот‑сервер');
+      return;
+    }
+    // Только после того, как мы точно получили ответ:
+    setTimeout(() => webapp.close(), 500);
   }
 
 async function sendSessionData() {
@@ -239,9 +243,6 @@ async function sendSessionData() {
 
             // Показываем уведомление в WebApp
             showNotification(result.message || '✅ ОК');
-
-            // Закрываем WebApp через секунду
-            setTimeout(() => webapp.close(), 1000);
 
         } else {
             const msg = result.detail || '❌ Ошибка при отправке';
