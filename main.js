@@ -9,8 +9,6 @@ const initData = webapp.initData;
 const params = webapp.themeParams;
 const root = document.documentElement;
 
-alert(initData)
-
 if (params) {
     root.style.setProperty('--tg-theme-bg-color', params.bg_color);
     root.style.setProperty('--tg-theme-text-color', params.text_color);
@@ -171,34 +169,41 @@ function showNotification(message) {
     }, 2000);
 }
 
+async function notifyServer(eventPayload) {
+    const body = {
+      chat_id: chatId,
+      message_id: msgId,
+      event: eventPayload,   // любое ваше содержание
+    };
+    await fetch('https://autopark-gthost.amvera.io/api/webapp/callback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    // по желанию закрываем WebApp:
+    webapp.close();
+  }
+
 async function sendSessionData() {
     if (!initData) {
-        errorMessage.textContent = '❌ Не удалось получить данные Telegram.';
-        errorMessage.style.display = 'block';
-        alert('❌ Не удалось получить данные Telegram.');
+        showError('❌ Не удалось получить данные Telegram.');
         return;
     }
 
     const marker = currentMarker?.getLatLng?.();
     if (!marker) {
-        errorMessage.textContent = '❌ Координаты не выбраны.';
-        errorMessage.style.display = 'block';
-        alert('❌ Координаты не выбраны.');
+        showError('❌ Координаты не выбраны.');
         return;
     }
 
     const odo = Number(odometer.value);
     if (isNaN(odo) || odo < 0) {
-        errorMessage.textContent = '❌ Пожалуйста, укажите корректный пробег.';
-        errorMessage.style.display = 'block';
-        alert('❌ Пожалуйста, укажите корректный пробег.');
+        showError('❌ Пожалуйста, укажите корректный пробег.');
         return;
     }
 
-    if (sessionPhotos.length !== 4) {
-        errorMessage.textContent = '❌ Необходимо 4 фото.';
-        errorMessage.style.display = 'block';
-        alert('❌ Необходимо 4 фото.');
+    if (sessionPhotos.length !== REQUIRED_PHOTOS) {
+        showError('❌ Необходимо 4 фото.');
         return;
     }
 
@@ -216,49 +221,33 @@ async function sendSessionData() {
         const res = await fetch('https://autopark-gthost.amvera.io/api/report', {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `tma ${initData}`
+                'Content-Type': 'application/json',
+                'Authorization': `tma ${initData}`
             },
             body: JSON.stringify(payload)
-          });
-          
-        let result;
-        
-        result = await res.json();
+        });
+        const result = await res.json();
 
         if (res.ok && result.status === 'ok') {
-            try {
-                webapp.sendData(JSON.stringify({
-                  chat_id: chatId,
-                  msg_id:  msgId,
-                  car_id:  carId,
-                  action   // добавил, чтобы бот знал, start или end
-                }));
-              } catch (e) {
-                alert("❌ sendData failed:", e);
-              }
+            // ← здесь уведомляем ваш сервер о событии
+            await notifyServer({
+                event: action,        // будет либо "start", либо "end"
+                car_id: Number(carId)
+              });
 
-            if (result.user_id) {
-                alert(`✅`);
-            } else {
-                alert('✅ Сессия успешно создана');
-            }
+            // Показываем уведомление в WebApp
+            showNotification(result.message || '✅ ОК');
 
-            if (action === 'start') {
-                setTimeout(() => webapp.close(), 1000);
-            } else if (action === 'end') {
-                setTimeout(() => webapp.close(), 3000);
-            }
+            // Закрываем WebApp через секунду
+            setTimeout(() => webapp.close(), 1000);
+
         } else {
             const msg = result.detail || '❌ Ошибка при отправке';
-            errorMessage.textContent = msg;
-            errorMessage.style.display = 'block';
-            alert(`❌ ${msg}`);
+            showError(msg);
         }
-    } catch {
-        errorMessage.textContent = '⚠️ Ошибка соединения';
-        errorMessage.style.display = 'block';
-        alert('⚠️ Ошибка соединения с сервером');
+    } catch (e) {
+        console.error(e);
+        showError('⚠️ Ошибка соединения с сервером');
     }
 }
 
