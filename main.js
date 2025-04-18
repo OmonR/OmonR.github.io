@@ -218,14 +218,15 @@ async function sendSessionData() {
         });
 
         const result = await res.json();
+        alert(result)
 
         if (res.ok && result.status === 'ok') {
             showNotification(result.message || '✅ Сессия завершена');
 
             if (result.user_id) {
-                alert(` ${result}`);
+                alert(`✅ Сессия успешно создана. User ID: ${result.user_id}`);
             } else {
-                alert(` ${result}`);
+                alert('✅ Сессия успешно создана');
             }
 
             if (action === 'start') {
