@@ -9,6 +9,21 @@ const initData = webapp.initData;
 const params = webapp.themeParams;
 const root = document.documentElement;
 
+
+const res = await fetch('https://autopark-gthost.amvera.io/api/report', {
+    method: 'POST',
+    headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `tma ${initData}` // Use the raw init data string
+    },
+    body: JSON.stringify(payload)
+});
+
+const result = await res.json();
+
+alert(JSON.stringify(result, null, 2))
+
+
 if (params) {
     root.style.setProperty('--tg-theme-bg-color', params.bg_color);
     root.style.setProperty('--tg-theme-text-color', params.text_color);
@@ -218,7 +233,8 @@ async function sendSessionData() {
         });
 
         const result = await res.json();
-        alert(result)
+        alert(JSON.stringify(result, null, 2))
+
 
         if (res.ok && result.status === 'ok') {
             showNotification(result.message || '✅ Сессия завершена');
