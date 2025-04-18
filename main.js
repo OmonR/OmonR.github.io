@@ -174,7 +174,7 @@ function showNotification(message) {
 async function notifyServer(eventPayload) {
     const body = { chat_id: chatId, message_id: msgId, event: eventPayload };
     try {
-      const res = await fetch('https://…/api/webapp/callback', {
+      const res = await fetch('https://autopark-gthost.amvera.io/api/webapp/callback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
