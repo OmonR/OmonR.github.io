@@ -171,6 +171,7 @@ async function sendSessionData() {
     if (!initData) {
         errorMessage.textContent = '❌ Не удалось получить данные Telegram.';
         errorMessage.style.display = 'block';
+        alert('❌ Не удалось получить данные Telegram.');
         return;
     }
 
@@ -178,6 +179,7 @@ async function sendSessionData() {
     if (!marker) {
         errorMessage.textContent = '❌ Координаты не выбраны.';
         errorMessage.style.display = 'block';
+        alert('❌ Координаты не выбраны.');
         return;
     }
 
@@ -185,12 +187,14 @@ async function sendSessionData() {
     if (isNaN(odo) || odo < 0) {
         errorMessage.textContent = '❌ Пожалуйста, укажите корректный пробег.';
         errorMessage.style.display = 'block';
+        alert('❌ Пожалуйста, укажите корректный пробег.');
         return;
     }
 
     if (sessionPhotos.length !== 4) {
         errorMessage.textContent = '❌ Необходимо 4 фото.';
         errorMessage.style.display = 'block';
+        alert('❌ Необходимо 4 фото.');
         return;
     }
 
@@ -215,14 +219,28 @@ async function sendSessionData() {
 
         if (res.ok && result.status === 'ok') {
             showNotification(result.message || '✅ Сессия завершена');
-            setTimeout(() => webapp.close(), 3000);
+
+            if (result.user_id) {
+                alert(`✅ Сессия успешно создана. User ID: ${result.user_id}`);
+            } else {
+                alert('✅ Сессия успешно создана');
+            }
+
+            if (action === 'start') {
+                setTimeout(() => switchView('map'), 2000);
+            } else if (action === 'end') {
+                setTimeout(() => webapp.close(), 3000);
+            }
         } else {
-            errorMessage.textContent = result.detail || '❌ Ошибка при отправке';
+            const msg = result.detail || '❌ Ошибка при отправке';
+            errorMessage.textContent = msg;
             errorMessage.style.display = 'block';
+            alert(`❌ ${msg}`);
         }
     } catch {
         errorMessage.textContent = '⚠️ Ошибка соединения';
         errorMessage.style.display = 'block';
+        alert('⚠️ Ошибка соединения с сервером');
     }
 }
 
