@@ -205,7 +205,7 @@ async function sendSessionData() {
         longitude: marker.lng,
         odometer: odo,
         photos: sessionPhotos,
-        init_data: str 
+        init_data: initDataRaw 
     };
     
     try {
