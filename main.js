@@ -183,7 +183,7 @@ async function notifyServer(eventPayload) {
       console.log('Callback response:', json);
     } catch (err) {
       console.error('Callback error:', err);
-      showError('Не удалось уведомить бот‑сервер');
+      showError(err);
       return;
     }
     // Только после того, как мы точно получили ответ:
