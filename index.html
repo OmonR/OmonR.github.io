@@ -1,72 +1,91 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Autopark WebApp</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Web App</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="forbiddenPage" class="forbidden hidden">
+        <h1>❌ Forbidden</h1>
+    </div>
     <div class="container">
-        <div class="navbar">
-            <button class="nav-button" data-view="map">Карта</button>
-            <button class="nav-button" data-view="camera">Фото</button>
-            <button class="nav-button" data-view="session">Сессия</button>
-        </div>
-
-        <div id="mapView" class="view">
+        <!-- Map View -->
+        <div id="mapView" class="view active">
             <div id="map"></div>
-            <button id="locationButton" class="floating-button" aria-label="My Location">
-                <span class="material-icons">my_location</span>
+            <p id="error-message" class="error"></p>
+            <button id="locationButton" class="action-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 1.892.402 3.13 1.5 4.5L12 22l6.5-7.5c1.098-1.37 1.5-2.608 1.5-4.5a8 8 0 0 0-8-8Z"/></svg>
+                I'm here
             </button>
-            <button id="continueButton" class="floating-button hidden" aria-label="Continue">
-                <span class="material-icons">arrow_forward</span>
+            <button id="continueButton" class="action-button secondary hidden">
+                Continue
             </button>
         </div>
 
+        <!-- Camera View -->
         <div id="cameraView" class="view">
             <div class="camera-container">
                 <video id="video" autoplay playsinline></video>
                 <canvas id="canvas"></canvas>
+                <div class="camera-controls">
+                    <button id="captureButton" class="capture-button" disabled>
+                        <div class="capture-button-inner"></div>
+                    </button>
+                </div>
             </div>
-            <div class="camera-controls">
-                <button id="captureButton" disabled></button>
+            <p id="camera-error" class="error"></p>
+            <div id="odometerInput" class="odometer-input hidden">
+                <input type="number" 
+                       id="odometer" 
+                       placeholder="Enter odometer reading" 
+                       class="input-field"
+                       inputmode="numeric"
+                       pattern="[0-9]*">
+                <button id="continueToPhotos" class="action-button" disabled>
+                    Continue
+                </button>
             </div>
-            <div id="odometerInput" class="hidden">
-                <label for="odometer">Текущий пробег (км)</label>
-                <input type="number" id="odometer" min="0" placeholder="Введите пробег" inputmode="numeric">
-            </div>
-            <button id="backButton" class="hidden">
-                <span class="material-icons">arrow_back</span> Назад
+            <button id="backButton" class="action-button secondary hidden">
+                Back
             </button>
         </div>
 
+        <!-- Session View -->
         <div id="sessionView" class="view">
-            <div class="session-info">
-                <h2>Фотофиксация</h2>
-                <p id="photoCounter">0 из 4 фото</p>
+            <div class="session-header">
+                <h2>Car Photos</h2>
+                <p id="photoCounter">0 of 4 photos taken</p>
             </div>
             <div class="camera-container">
                 <video id="sessionVideo" autoplay playsinline></video>
                 <canvas id="sessionCanvas"></canvas>
+                <div class="camera-controls">
+                    <button id="sessionCaptureButton" class="capture-button" disabled>
+                        <div class="capture-button-inner"></div>
+                    </button>
+                </div>
             </div>
             <div id="photoGrid" class="photo-grid"></div>
-            <div class="camera-controls">
-                <button id="sessionCaptureButton" disabled></button>
-            </div>
         </div>
+
+        <nav class="nav-tabs">
+            <button class="nav-button active" data-view="map">
+                <div class="nav-dot"></div>
+            </button>
+            <button class="nav-button" data-view="camera">
+                <div class="nav-dot"></div>
+            </button>
+            <button class="nav-button" data-view="session">
+                <div class="nav-dot"></div>
+            </button>
+        </nav>
     </div>
 
-    <div id="error-message"></div>
-    <div id="forbiddenPage" class="hidden">
-        <h1>Доступ запрещен</h1>
-        <p>Этот WebApp может быть запущен только из Telegram.</p>
-    </div>
-
-    <script src="script.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="main.js"></script>
 </body>
 </html>
