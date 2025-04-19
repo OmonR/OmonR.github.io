@@ -1,24 +1,15 @@
+
 const webapp = window.Telegram.WebApp;
 webapp.ready();
+webapp.expand();
 
-// Получаем подписанную строку initData
-const initDataRaw = webapp.initData;
 
-fetch('https://autopark-gthost.amvera.io/api/auth', {
-  method: 'POST',
-  headers: {
-    'Authorization': `tma ${initDataRaw}`
-  }
-})
-  .then(res => res.json())
-  .catch(err => {
-    console.error('Auth failed', err);
-  });
+// Get signed initData string
+const initData = webapp.initData;
 
-  alert(initDataRaw)
 // Set theme variables from Telegram theme params
-const root = document.documentElement;
 const params = webapp.themeParams;
+const root = document.documentElement;
 
 if (params) {
     root.style.setProperty('--tg-theme-bg-color', params.bg_color);
@@ -29,11 +20,7 @@ if (params) {
     root.style.setProperty('--tg-theme-button-text-color', params.button_text_color);
 }
 
-const map = L.map('map').setView([51.505, -0.09], 13);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-}).addTo(map);
-
+// 2. DOM Elements and Variables
 const navButtons = document.querySelectorAll('.nav-button');
 const views = document.querySelectorAll('.view');
 const locationButton = document.getElementById('locationButton');
@@ -52,13 +39,11 @@ const sessionCaptureButton = document.getElementById('sessionCaptureButton');
 const photoCounter = document.getElementById('photoCounter');
 const photoGrid = document.getElementById('photoGrid');
 const urlParams = new URLSearchParams(window.location.search);
-const carId = urlParams.get('car_id');
-const action = urlParams.get('action') || 'start';
+const chatId = urlParams.get('chat_id');
+const msgId  = urlParams.get('msg_id');
+const carId  = urlParams.get('car_id');
 
-// if (!carId) {
-//     document.body.innerHTML = '<p style="color:red;padding:1rem;">❌</p>';
-//     throw new Error('Missing params');
-// }
+const action = urlParams.get('action') || 'start';
 
 let currentMarker = null;
 let stream = null;
@@ -66,12 +51,17 @@ let photoTaken = false;
 let sessionPhotos = [];
 const REQUIRED_PHOTOS = 4;
 
-navButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        const view = button.dataset.view;
-        switchView(view);
-    });
-});
+// 3. Initialize Map
+const map = L.map('map').setView([51.505, -0.09], 13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+// 4. Utility Functions
+function showError(message) {
+    errorMessage.textContent = message;
+    errorMessage.style.display = 'block';
+}
 
 function switchView(view) {
     navButtons.forEach(btn => {
@@ -98,28 +88,6 @@ function createDraggableMarker(latlng) {
     }
     currentMarker = L.marker(latlng, { draggable: true }).addTo(map);
     continueButton.classList.remove('hidden');
-}
-
-map.on('click', e => createDraggableMarker(e.latlng));
-
-locationButton.addEventListener('click', () => {
-    if (!navigator.geolocation) {
-        showError('Geolocation is not supported by your browser.');
-        return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-        ({ coords }) => {
-            createDraggableMarker([coords.latitude, coords.longitude]);
-            map.setView([coords.latitude, coords.longitude], 15);
-        },
-        () => showError('Please enable location services to continue.')
-    );
-});
-
-function showError(message) {
-    errorMessage.textContent = message;
-    errorMessage.style.display = 'block';
 }
 
 async function startCamera(view) {
@@ -170,6 +138,152 @@ function capturePhoto(video, canvas) {
     return canvas.toDataURL('image/jpeg');
 }
 
+function updateSessionUI() {
+    photoCounter.textContent = `${sessionPhotos.length} из ${REQUIRED_PHOTOS} фото`;
+    photoGrid.innerHTML = '';
+    for (let i = 0; i < REQUIRED_PHOTOS; i++) {
+        const slot = document.createElement('div');
+        slot.className = `photo-slot ${sessionPhotos[i] ? 'filled' : 'empty'}`;
+        if (sessionPhotos[i]) {
+            const img = document.createElement('img');
+            img.src = sessionPhotos[i];
+            img.alt = `Photo ${i + 1}`;
+            slot.appendChild(img);
+        } else {
+            slot.textContent = i + 1;
+        }
+        photoGrid.appendChild(slot);
+    }
+}
+
+function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    notification.offsetHeight;
+    notification.classList.add('show');
+
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 2000);
+}
+
+async function notifyServer(eventPayload) {
+    const body = { chat_id: chatId, message_id: msgId, event: eventPayload };
+    try {
+      const res = await fetch('https://autopark-gthost.amvera.io/api/webapp/callback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      console.log('Callback response:', json);
+    } catch (err) {
+      console.error('Callback error:', err);
+      showError(err);
+      return;
+    }
+    // Только после того, как мы точно получили ответ:
+    setTimeout(() => webapp.close(), 500);
+  }
+
+async function sendSessionData() {
+    if (!initData) {
+        showError('❌ Не удалось получить данные Telegram.');
+        return;
+    }
+
+    const marker = currentMarker?.getLatLng?.();
+    if (!marker) {
+        showError('❌ Координаты не выбраны.');
+        return;
+    }
+
+    const odo = Number(odometer.value);
+    if (isNaN(odo) || odo < 0) {
+        showError('❌ Пожалуйста, укажите корректный пробег.');
+        return;
+    }
+
+    if (sessionPhotos.length !== REQUIRED_PHOTOS) {
+        showError('❌ Необходимо 4 фото.');
+        return;
+    }
+
+    const payload = {
+        car_id: Number(carId),
+        action,
+        latitude: marker.lat,
+        longitude: marker.lng,
+        odometer: odo,
+        photos: sessionPhotos,
+        init_data: initData 
+    };
+    
+    try {
+        const res = await fetch('https://autopark-gthost.amvera.io/api/report', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `tma ${initData}`
+            },
+            body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+
+        if (res.ok && result.status === 'ok') {
+            // ← здесь уведомляем ваш сервер о событии
+            await notifyServer({
+                event: action,        // будет либо "start", либо "end"
+                car_id: Number(carId)
+              });
+
+            // Показываем уведомление в WebApp
+            showNotification(result.message || '✅ ОК');
+
+        } else {
+            const msg = result.detail || '❌ Ошибка при отправке';
+            showError(msg);
+        }
+    } catch (e) {
+        console.error(e);
+        showError('⚠️ Ошибка соединения с сервером');
+    }
+}
+
+function showForbiddenError() {
+    document.querySelector('.container').classList.add('hidden');
+    document.getElementById('forbiddenPage').classList.remove('hidden');
+}
+
+// 5. Event Listeners
+navButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        const view = button.dataset.view;
+        switchView(view);
+    });
+});
+
+map.on('click', e => createDraggableMarker(e.latlng));
+
+locationButton.addEventListener('click', () => {
+    if (!navigator.geolocation) {
+        showError('Geolocation is not supported by your browser.');
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        ({ coords }) => {
+            createDraggableMarker([coords.latitude, coords.longitude]);
+            map.setView([coords.latitude, coords.longitude], 15);
+        },
+        () => showError('Please enable location services to continue.')
+    );
+});
+
 captureButton.addEventListener('click', () => {
     const photoData = capturePhoto(video, canvas);
     stopCamera();
@@ -207,97 +321,24 @@ continueToPhotos.addEventListener('click', () => {
     if (odometer.value) switchView('session');
 });
 
-function updateSessionUI() {
-    photoCounter.textContent = `${sessionPhotos.length} из ${REQUIRED_PHOTOS} фото`;
-    photoGrid.innerHTML = '';
-    for (let i = 0; i < REQUIRED_PHOTOS; i++) {
-        const slot = document.createElement('div');
-        slot.className = `photo-slot ${sessionPhotos[i] ? 'filled' : 'empty'}`;
-        if (sessionPhotos[i]) {
-            const img = document.createElement('img');
-            img.src = sessionPhotos[i];
-            img.alt = `Photo ${i + 1}`;
-            slot.appendChild(img);
-        } else {
-            slot.textContent = i + 1;
+// 6. Initialize Application
+function initApp() {
+    fetch('https://autopark-gthost.amvera.io/api/auth', {
+        method: 'POST',
+        headers: {
+            'Authorization': `tma ${initData}`
         }
-        photoGrid.appendChild(slot);
-    }
+    })
+    .then(res => res.json())
+    .catch(err => {
+        console.error('Auth failed', err);
+    });
 }
 
-function showNotification(message) {
-    const notification = document.createElement('div');
-    notification.className = 'notification';
-    notification.textContent = message;
-    document.body.appendChild(notification);
-
-    notification.offsetHeight;
-    notification.classList.add('show');
-
-    setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 300);
-    }, 2000);
+// Start the application
+if (!initData) {
+    showForbiddenError();
+} else {
+    initApp();
+    switchView('map');
 }
-
-async function sendSessionData() {
-    const initData = Telegram.WebApp?.initData;
-    if (!initData) {
-        errorMessage.textContent = '❌ Не удалось получить данные Telegram.';
-        errorMessage.style.display = 'block';
-        return;
-    }
-
-    const marker = currentMarker?.getLatLng?.();
-    if (!marker) {
-        errorMessage.textContent = '❌ Координаты не выбраны.';
-        errorMessage.style.display = 'block';
-        return;
-    }
-
-    const odo = Number(odometer.value);
-    if (isNaN(odo) || odo < 0) {
-        errorMessage.textContent = '❌ Пожалуйста, укажите корректный пробег.';
-        errorMessage.style.display = 'block';
-        return;
-    }
-
-    if (sessionPhotos.length !== 4) {
-        errorMessage.textContent = '❌ Необходимо 4 фото.';
-        errorMessage.style.display = 'block';
-        return;
-    }
-
-    const payload = {
-        car_id: Number(carId),
-        action,
-        latitude: marker.lat,
-        longitude: marker.lng,
-        odometer: odo,
-        photos: sessionPhotos,
-        init_data: initData
-    };
-
-    try {
-        const res = await fetch('https://autopark-gthost.amvera.io/api/report', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        const result = await res.json();
-
-        if (res.ok && result.status === 'ok') {
-            showNotification(result.message || '✅ Сессия завершена');
-            setTimeout(() => webapp.close(), 3000);
-        } else {
-            errorMessage.textContent = result.detail || '❌ Ошибка при отправке';
-            errorMessage.style.display = 'block';
-        }
-    } catch {
-        errorMessage.textContent = '⚠️ Ошибка соединения';
-        errorMessage.style.display = 'block';
-    }
-}
-
-switchView('map');
