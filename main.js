@@ -57,6 +57,24 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
+odometer.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        
+        if (!odometer.value) {
+            showError('Пожалуйста, введите показания одометра');
+            return;
+        }
+        
+        // Добавляем вибрацию
+        if (window.Telegram?.WebApp?.HapticFeedback) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        }
+        
+        switchView('session');
+    }
+});
+
 // 4. Utility Functions
 function showError(message) {
     errorMessage.textContent = message;
@@ -293,7 +311,7 @@ captureButton.addEventListener('click', () => {
     odometerInput.classList.remove('hidden');
     backButton.classList.remove('hidden');
     photoTaken = true;
-});
+    });
 
 sessionCaptureButton.addEventListener('click', () => {
     const photoData = capturePhoto(sessionVideo, sessionCanvas);
