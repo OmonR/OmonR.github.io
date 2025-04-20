@@ -165,20 +165,28 @@ body {
 }
 
 .capture-button {
+    position: relative;
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    background: white;
-    border: 6px solid white;
-    box-shadow: 0 0 0 4px black;
-    padding: 0;
+    border: none;
+    background: white; /* внутренний круг */
     cursor: pointer;
+    box-shadow: 0 0 0 5px white, 0 0 0 9px black; /* имитация обводки */
     transition: transform 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
 }
+
+.capture-button:hover {
+    transform: scale(1.05);
+}
+
+.capture-button:active {
+    transform: scale(0.95);
+}
+
 
 .capture-button:not(:disabled):hover {
     transform: scale(1.05);
@@ -361,27 +369,6 @@ body {
     font-size: 36px;
     display: inline-block;
     animation: fadeIn 0.3s ease-in-out;
-}
-
-.action-button {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 12px;
-    background-color: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    transition: background-color 0.2s ease;
-    display: block;
-    margin: 16px auto;
-    text-align: center;
-    width: calc(100% - 32px); /* немного отступов по бокам */
-}
-
-.action-button:hover {
-    background-color: #1e6db8; /* немного темнее при наведении */
 }
 
 
