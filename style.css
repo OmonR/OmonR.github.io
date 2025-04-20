@@ -196,6 +196,9 @@ body {
     transform: scale(0.95);
 }
 
+.capture-button:not(.hidden) {
+    opacity: 1; /* Видимость после разрешения камеры */
+}
 
 .capture-button:not(:disabled):hover {
     transform: scale(1.05);

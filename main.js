@@ -89,6 +89,9 @@ function switchView(view) {
         v.classList.toggle('active', v.id === `${view}View`);
     });
 
+    // Всегда показываем nav-button при переключении вкладок
+    document.querySelector('.nav-tabs').classList.remove('hidden');
+
     if (view === 'camera' || view === 'session') {
         startCamera(view);
     } else {
@@ -122,7 +125,8 @@ async function startCamera(view) {
         videoElement.srcObject = stream;
         
         if (view === 'camera') {
-            captureButton.classList.remove('hidden');
+            captureButton.classList.remove('hidden'); // Убираем hidden
+            captureButton.style.opacity = '1'; // Явно включаем видимость
             captureButton.disabled = false;
         }
 
@@ -134,7 +138,6 @@ async function startCamera(view) {
         captureBtn.disabled = true;
     }
 }
-
 
 function stopCamera() {
     if (stream) {
@@ -248,6 +251,9 @@ function hideReviewButtons() {
 document.getElementById('backToCamera').addEventListener('click', () => {
     hideReviewButtons();
     startCamera('camera');
+    
+    // Показываем nav-button
+    document.querySelector('.nav-tabs').classList.remove('hidden');
 });
 
 backToCamera.addEventListener('click', () => {
@@ -417,7 +423,10 @@ captureButton.addEventListener('click', () => {
     video.style.display = 'none';
     captureButton.style.display = 'none';
 
-    showReviewButtons(); // ⬅️ Добавим кнопки отправки/назад
+    // Скрываем nav-button
+    document.querySelector('.nav-tabs').classList.add('hidden');
+    
+    showReviewButtons();
 });
 
 sessionCaptureButton.addEventListener('click', () => {
