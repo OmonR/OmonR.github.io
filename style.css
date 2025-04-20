@@ -165,18 +165,26 @@ body {
 }
 
 .capture-button {
-    position: relative;
-    width: 80px;
-    height: 80px;
+    width: 72px;
+    height: 72px;
     border-radius: 50%;
-    border: none;
-    background: white; /* внутренний круг */
+    background: transparent;
+    border: 4px solid white; /* Обводка */
+    padding: 0;
     cursor: pointer;
-    box-shadow: 0 0 0 5px white, 0 0 0 9px black; /* имитация обводки */
-    transition: transform 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    transition: transform 0.2s ease;
+}
+
+.capture-button-inner {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: white; /* Внутренний круг */
+    display: block;
 }
 
 .capture-button:hover {
@@ -196,9 +204,6 @@ body {
     transform: scale(0.95);
 }
 
-.capture-button-inner {
-    display: none; /* больше не нужен */
-}
 .capture-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
