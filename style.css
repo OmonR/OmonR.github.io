@@ -169,22 +169,22 @@ body {
     height: 72px;
     border-radius: 50%;
     background: transparent;
-    border: 4px solid white; /* Обводка */
+    border: 4px solid white;
     padding: 0;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    transition: transform 0.2s ease;
+    display: flex;          /* Добавляем flex */
+    align-items: center;    /* Центрируем по вертикали */
+    justify-content: center; /* Центрируем по горизонтали */
+    position: relative;     /* Для абсолютного позиционирования дочерних элементов */
 }
 
 .capture-button-inner {
-    width: 56px;
+    width: 56px;           /* 72px (кнопка) - 8px (обводка) - 8px (отступы) = 56px */
     height: 56px;
     border-radius: 50%;
-    background-color: white; /* Внутренний круг */
+    background-color: white;
     display: block;
+    margin: 0;             /* Убираем возможные отступы */
 }
 
 .capture-button:hover {
