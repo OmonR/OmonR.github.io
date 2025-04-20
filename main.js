@@ -111,6 +111,7 @@ function createDraggableMarker(latlng) {
 async function startCamera(view) {
     const videoElement = view === 'session' ? sessionVideo : video;
     const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
+    const canvasEl = view === 'session' ? sessionCanvas : canvas;
 
     if (photoTaken) resetCameraView();
 
@@ -122,12 +123,19 @@ async function startCamera(view) {
         captureBtn.disabled = false;
 
         videoElement.style.display = 'block';
-        (view === 'session' ? sessionCanvas : canvas).style.display = 'none';
+        canvasEl.style.display = 'none';
+
+        // ⬇️ ЭТО ДОБАВЬ:
+        if (view === 'camera') {
+            captureButton.style.display = 'block';
+        }
+
     } catch {
         showError('Camera access denied. Please grant permission.');
         captureBtn.disabled = true;
     }
 }
+
 
 function stopCamera() {
     if (stream) {
