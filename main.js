@@ -148,13 +148,23 @@ function resetCameraView() {
     odometer.value = '';
 }
 
-function capturePhoto(video, canvas) {
+function captureAndCropPhoto(video, canvas) {
     const ctx = canvas.getContext('2d');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const width = video.videoWidth;
+    const height = video.videoHeight;
+
+    const cropWidth = width; // например, 80% от ширины
+    const cropHeight = height * 0.4; // например, центр экрана
+    const cropX = (width - cropWidth) / 2;
+    const cropY = (height - cropHeight) / 2;
+
+    canvas.width = cropWidth;
+    canvas.height = cropHeight;
+    ctx.drawImage(video, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+
     return canvas.toDataURL('image/jpeg');
 }
+
 
 function updateSessionUI() {
     photoCounter.textContent = `${sessionPhotos.length} из ${REQUIRED_PHOTOS} фото`;
@@ -188,6 +198,78 @@ function showNotification(message) {
         setTimeout(() => notification.remove(), 300);
     }, 2000);
 }
+
+function showSpinner() {
+    const el = document.getElementById('photoStatus');
+    el.classList.remove('hidden', 'check');
+    el.querySelector('.spinner').style.display = 'block';
+}
+
+function hideSpinner() {
+    document.getElementById('photoStatus').classList.add('hidden');
+}
+
+function showCheckmark() {
+    const el = document.getElementById('photoStatus');
+    el.classList.add('check');
+    el.querySelector('.spinner').style.display = 'none';
+}
+
+
+function showReviewButtons() {
+    document.getElementById('reviewButtons').classList.remove('hidden');
+}
+
+
+function hideReviewButtons() {
+    document.getElementById('reviewButtons').classList.add('hidden');
+}
+
+document.getElementById('backToCamera').addEventListener('click', () => {
+    hideReviewButtons();
+    startCamera('camera');
+});
+
+document.getElementById('submitOdometerPhoto').addEventListener('click', async () => {
+    showSpinner();
+    const base64image = canvas.toDataURL('image/jpeg');
+
+    const marker = currentMarker?.getLatLng?.();
+    if (!marker) return showError("Нет координат");
+
+    const payload = {
+        init_data: initData,
+        car_id: Number(carId),
+        latitude: marker.lat,
+        longitude: marker.lng,
+        photo: base64image,
+        action,
+    };
+
+    try {
+        const res = await fetch('https://autopark-gthost.amvera.io/api/odometer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `tma ${initData}`
+            },
+            body: JSON.stringify(payload),
+        });
+        const result = await res.json();
+
+        if (res.ok && result.status === 'ok') {
+            showCheckmark();
+            setTimeout(() => switchView('session'), 1000);
+        } else {
+            throw new Error(result.detail || 'Ошибка отправки');
+        }
+    } catch (err) {
+        showError(err.message || 'Ошибка соединения');
+        alert('⚠️ Не удалось отправить фото. Попробуйте ещё раз.');
+        hideSpinner();
+    }
+});
+
 
 async function notifyServer(eventPayload) {
     const body = { chat_id: chatId, message_id: msgId, event: eventPayload };
@@ -303,15 +385,14 @@ locationButton.addEventListener('click', () => {
 });
 
 captureButton.addEventListener('click', () => {
-    const photoData = capturePhoto(video, canvas);
+    const croppedPhoto = captureAndCropPhoto(video, canvas);
     stopCamera();
-    video.style.display = 'none';
     canvas.style.display = 'block';
+    video.style.display = 'none';
     captureButton.style.display = 'none';
-    odometerInput.classList.remove('hidden');
-    backButton.classList.remove('hidden');
-    photoTaken = true;
-    });
+
+    showReviewButtons(); // ⬅️ Добавим кнопки отправки/назад
+});
 
 sessionCaptureButton.addEventListener('click', () => {
     const photoData = capturePhoto(sessionVideo, sessionCanvas);
