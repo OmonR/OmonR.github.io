@@ -120,16 +120,15 @@ async function startCamera(view) {
             video: { facingMode: 'environment' }
         });
         videoElement.srcObject = stream;
-        captureBtn.disabled = false;
+        captureBtn.disabled = false; // ✅ Разблокируем кнопку
 
         videoElement.style.display = 'block';
         canvasEl.style.display = 'none';
 
-        // ⬇️ ЭТО ДОБАВЬ:
+        // Для camera view
         if (view === 'camera') {
             captureButton.style.display = 'block';
         }
-
     } catch {
         showError('Camera access denied. Please grant permission.');
         captureBtn.disabled = true;
