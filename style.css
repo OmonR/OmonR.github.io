@@ -165,11 +165,12 @@ body {
 }
 
 .capture-button {
-    width: 72px;
-    height: 72px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
-    background: transparent;
-    border: 3px solid var(--tg-theme-button-text-color);
+    background: white;
+    border: 6px solid white;
+    box-shadow: 0 0 0 4px black;
     padding: 0;
     cursor: pointer;
     transition: transform 0.2s ease;
@@ -188,13 +189,8 @@ body {
 }
 
 .capture-button-inner {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: var(--tg-theme-button-text-color);
-    transition: all 0.2s ease;
+    display: none; /* больше не нужен */
 }
-
 .capture-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -366,6 +362,28 @@ body {
     display: inline-block;
     animation: fadeIn 0.3s ease-in-out;
 }
+
+.action-button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+    background-color: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transition: background-color 0.2s ease;
+    display: block;
+    margin: 16px auto;
+    text-align: center;
+    width: calc(100% - 32px); /* немного отступов по бокам */
+}
+
+.action-button:hover {
+    background-color: #1e6db8; /* немного темнее при наведении */
+}
+
 
 @keyframes spin {
     to { transform: rotate(360deg); }
