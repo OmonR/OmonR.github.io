@@ -120,17 +120,17 @@ async function startCamera(view) {
             video: { facingMode: 'environment' }
         });
         videoElement.srcObject = stream;
-        captureBtn.disabled = false; // ✅ Разблокируем кнопку
+        
+        if (view === 'camera') {
+            captureButton.classList.remove('hidden');
+            captureButton.disabled = false;
+        }
 
         videoElement.style.display = 'block';
         canvasEl.style.display = 'none';
-
-        // Для camera view
-        if (view === 'camera') {
-            captureButton.style.display = 'block';
-        }
-    } catch {
-        showError('Camera access denied. Please grant permission.');
+    } catch (err) {
+        console.error('Camera error:', err);
+        showError('Не удалось получить доступ к камере. Разрешите доступ и попробуйте снова.');
         captureBtn.disabled = true;
     }
 }
@@ -154,6 +154,19 @@ function resetCameraView() {
     backButton.classList.add('hidden');
     odometer.value = '';
 }
+
+function capturePhoto(video, canvas) {
+    const ctx = canvas.getContext('2d');
+    const width = video.videoWidth;
+    const height = video.videoHeight;
+
+    canvas.width = width;
+    canvas.height = height;
+    ctx.drawImage(video, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+
+    return canvas.toDataURL('image/jpeg');
+}
+
 
 function captureAndCropPhoto(video, canvas) {
     const ctx = canvas.getContext('2d');

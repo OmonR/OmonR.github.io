@@ -175,7 +175,8 @@ body {
     display: flex;          /* Добавляем flex */
     align-items: center;    /* Центрируем по вертикали */
     justify-content: center; /* Центрируем по горизонтали */
-    position: relative;     /* Для абсолютного позиционирования дочерних элементов */
+    position: relative;    
+    opacity: 0;
 }
 
 .capture-button-inner {
