@@ -298,11 +298,7 @@ function showReviewButtons() {
 async function handleSubmitPhoto() {
     alert('📸 Клик сработал');
 
-    showSpinner();
     const base64image = canvas.toDataURL('image/jpeg');
-
-    const marker = currentMarker?.getLatLng?.();
-    if (!marker) return showError("Нет координат");
 
     const payload = {
         init_data: initData,
@@ -324,11 +320,11 @@ async function handleSubmitPhoto() {
         const result = await res.json();
 
         if (res.ok && result.status === 'ok') {
+            alert(res)
             showCheckmark();
             setTimeout(() => switchView('session'), 1000);
         } else if (res.ok && result.status === 'none') {
             alert("Не получилось распознать показания одометра. Попробуйте сделать другое фото.");
-            hideSpinner();
         } else {
             throw new Error(result.detail || 'Ошибка отправки');
         }
@@ -336,7 +332,6 @@ async function handleSubmitPhoto() {
     } catch (err) {
         showError(err.message || 'Ошибка соединения');
         alert('⚠️ Не удалось отправить фото. Попробуйте ещё раз.');
-        hideSpinner();
     }
 }
 
