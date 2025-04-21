@@ -356,16 +356,13 @@ async function handleSubmitPhoto() {
 }
 
 
-
-
 async function notifyServer(eventPayload) {
-    const body = { chat_id: chatId, message_id: msgId, event: eventPayload };
+    const body = { chat_id: chatId, message_id: msgId, event: eventPayload, init_data: initData};
     try {
       const res = await fetch('https://autopark-gthost.amvera.io/api/webapp/callback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
-        init_data: initData
       });
       const json = await res.json();
       console.log('Callback response:', json);
