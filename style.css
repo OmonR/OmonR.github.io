@@ -150,6 +150,9 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    position: relative;
+    z-index: 1;
+    pointer-events: none; /* Клик пройдёт сквозь canvas */
 }
 
 .camera-controls {
@@ -346,12 +349,14 @@ body {
 }
 
 .review-buttons {
+    z-index: 2;
     position: absolute;
     bottom: 16px;
     width: 100%;
     display: flex;
     justify-content: space-between;
     padding: 0 16px;
+    pointer-events: auto;
 }
 
 .circle-button {
