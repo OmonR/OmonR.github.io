@@ -127,6 +127,7 @@ async function startCamera(view) {
         if (view === 'camera') {
             captureButton.classList.remove('hidden'); // Убираем hidden
             captureButton.style.opacity = '1'; // Явно включаем видимость
+            captureButton.style.display = '';
             captureButton.disabled = false;
         }
 
