@@ -249,19 +249,21 @@ function hideReviewButtons() {
     document.getElementById('reviewButtons').classList.add('hidden');
 }
 
-document.getElementById('backToCamera').addEventListener('click', () => {
-    hideReviewButtons();
-    startCamera('camera');
-    
-    // Показываем nav-button
-    document.querySelector('.nav-tabs').classList.remove('hidden');
-});
+const backToCameraBtn = document.getElementById('backToCamera');
+if (backToCameraBtn) {
+    backToCameraBtn.addEventListener('click', () => {
+        hideReviewButtons();
+        startCamera('camera');
 
-backToCamera.addEventListener('click', () => {
-    reviewButtons.classList.add('hidden');
-    captureButton.classList.remove('hidden');
-    captureButton.disabled = false; // 👈 чтобы снова можно было нажимать
-});
+        // Показываем nav-button
+        document.querySelector('.nav-tabs').classList.remove('hidden');
+
+        // Возвращаем отображение captureButton
+        captureButton.classList.remove('hidden');
+        captureButton.disabled = false;
+        captureButton.style.display = 'block';
+    });
+}
 
 document.getElementById('submitOdometerPhoto').addEventListener('click', async () => {
     showSpinner();
