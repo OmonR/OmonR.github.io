@@ -30,6 +30,7 @@ const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const captureButton = document.getElementById('captureButton');
 const backButton = document.getElementById('backButton');
+const odometerInput = document.getElementById('odometerInput');
 const odometer = document.getElementById('odometer');
 const continueToPhotos = document.getElementById('continueToPhotos');
 const sessionVideo = document.getElementById('sessionVideo');
@@ -166,6 +167,7 @@ function resetCameraView() {
     video.style.display = 'block';
     canvas.style.display = 'none';
     captureButton.style.display = 'block';
+    odometerInput.classList.add('hidden');
     backButton.classList.add('hidden');
     odometer.value = '';
 }
