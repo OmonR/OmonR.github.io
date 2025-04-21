@@ -365,6 +365,7 @@ async function notifyServer(eventPayload) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
+        init_data: initData
       });
       const json = await res.json();
       console.log('Callback response:', json);
