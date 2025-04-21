@@ -295,14 +295,21 @@ function showReviewButtons() {
 }
 
 
+let recognizedOdometer = null;
+
+
 async function handleSubmitPhoto() {
     alert('📸 Клик сработал');
-
     showSpinner();
+
     const base64image = canvas.toDataURL('image/jpeg');
 
     const marker = currentMarker?.getLatLng?.();
-    if (!marker) return showError("Нет координат");
+    if (!marker) {
+        showError("Нет координат");
+        hideSpinner();
+        return;
+    }
 
     const payload = {
         init_data: initData,
@@ -322,23 +329,42 @@ async function handleSubmitPhoto() {
         });
 
         const result = await res.json();
-        alert(JSON.stringify(result, null, 2))
+        alert(JSON.stringify(result, null, 2));
+
         if (res.ok && result.status === 'ok') {
-            showCheckmark();
-            setTimeout(() => switchView('session'), 1000);
-        } else if (res.ok && result.status === 'none') {
-            alert("Не получилось распознать показания одометра. Попробуйте сделать другое фото.");
-            hideSpinner();
+            const odo = result.odometer;
+
+            if (res.ok && result.status === 'ok') {
+                const odo = result.odometer;
+            
+                if (odo === "None" || odo === null) {
+                    alert("Не удалось распознать показания одометра. Попробуйте сделать другое фото.");
+                    hideSpinner();
+                    switchView('camera');
+                    return;
+                }
+            
+                recognizedOdometer = odo;
+            
+                showCheckmark();
+                setTimeout(() => {
+                    switchView('session');
+                }, 1000);
+            }            
+
         } else {
-            throw new Error(result.detail || 'Ошибка отправки');
+            alert("❌ Ошибка от сервера");
+            hideSpinner();
         }
 
     } catch (err) {
+        console.error(err);
         showError(err.message || 'Ошибка соединения');
         alert('⚠️ Не удалось отправить фото. Попробуйте ещё раз.');
         hideSpinner();
     }
 }
+
 
 
 
@@ -389,7 +415,7 @@ async function sendSessionData() {
         action,
         latitude: marker.lat,
         longitude: marker.lng,
-        odometer: odo,
+        odometer: recognizedOdometer,
         photos: sessionPhotos,
         init_data: initData 
     };
