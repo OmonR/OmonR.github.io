@@ -139,13 +139,25 @@ body {
     overflow: hidden;
 }
 
+.camera-container > canvas,
+.camera-container > video,
+.camera-container > .camera-controls {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
 #video, #sessionVideo {
+    z-index: 1;
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
 #canvas, #sessionCanvas {
+    z-index: 2;
     display: none;
     width: 100%;
     height: 100%;
@@ -153,6 +165,7 @@ body {
 }
 
 .camera-controls {
+    z-index: 3;
     position: absolute;
     bottom: 0;
     left: 0;

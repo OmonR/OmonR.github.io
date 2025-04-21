@@ -116,17 +116,23 @@ async function startCamera(view) {
     const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
     const canvasEl = view === 'session' ? sessionCanvas : canvas;
 
-    if (photoTaken) resetCameraView();
+    if (stream) stopCamera(); // 💡 предотвращаем повторный вызов
+
+    if (photoTaken) resetCameraView(); // 💡 возможно, сделать reset по view
 
     try {
         stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: 'environment' }
         });
         videoElement.srcObject = stream;
-        
+
+        await videoElement.play().catch(err => {
+            console.warn('Auto-play error:', err);
+        });
+
         if (view === 'camera') {
-            captureButton.classList.remove('hidden'); // Убираем hidden
-            captureButton.style.opacity = '1'; // Явно включаем видимость
+            captureButton.classList.remove('hidden');
+            captureButton.style.opacity = '1';
             captureButton.style.display = '';
             captureButton.disabled = false;
         }
@@ -134,9 +140,9 @@ async function startCamera(view) {
         if (view === 'session') {
             sessionCaptureButton.disabled = false;
             sessionCaptureButton.classList.remove('hidden');
-            sessionCaptureButton.style.opacity = '1';       // 👈 ВАЖНО!
-            sessionCaptureButton.style.display = 'block';   // 👈 НА ВСЯКИЙ СЛУЧАЙ
-        }        
+            sessionCaptureButton.style.opacity = '1';
+            sessionCaptureButton.style.display = 'block';
+        }
 
         videoElement.style.display = 'block';
         canvasEl.style.display = 'none';
