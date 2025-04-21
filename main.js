@@ -296,9 +296,11 @@ function showReviewButtons() {
 
 
 async function handleSubmitPhoto() {
-    alert('📸 Клик сработал');
+    alert('📸');
 
     const base64image = canvas.toDataURL('image/jpeg');
+
+    alert(base64image)
 
     const payload = {
         init_data: initData,
