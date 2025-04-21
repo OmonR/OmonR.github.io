@@ -82,6 +82,7 @@ function showError(message) {
 }
 
 function switchView(view) {
+    hideSpinner();
     navButtons.forEach(btn => {
         btn.classList.toggle('active', btn.dataset.view === view);
     });
@@ -268,6 +269,7 @@ function hideReviewButtons() {
 const backToCameraBtn = document.getElementById('backToCamera');
 if (backToCameraBtn) {
     backToCameraBtn.addEventListener('click', () => {
+        hideSpinner();
         hideReviewButtons();
         startCamera('camera');
 
@@ -300,6 +302,8 @@ let recognizedOdometer = null;
 
 async function handleSubmitPhoto() {
     showSpinner();
+
+    const base64image = canvas.toDataURL('image/jpeg');
 
     const payload = {
         init_data: initData,
