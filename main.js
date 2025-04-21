@@ -302,15 +302,6 @@ async function handleSubmitPhoto() {
     alert('📸 Клик сработал');
     showSpinner();
 
-    const base64image = canvas.toDataURL('image/jpeg');
-
-    const marker = currentMarker?.getLatLng?.();
-    if (!marker) {
-        showError("Нет координат");
-        hideSpinner();
-        return;
-    }
-
     const payload = {
         init_data: initData,
         car_id: Number(carId),
@@ -333,24 +324,20 @@ async function handleSubmitPhoto() {
 
         if (res.ok && result.status === 'ok') {
             const odo = result.odometer;
-
-            if (res.ok && result.status === 'ok') {
-                const odo = result.odometer;
             
-                if (odo === "None" || odo === null) {
-                    alert("Не удалось распознать показания одометра. Попробуйте сделать другое фото.");
-                    hideSpinner();
-                    switchView('camera');
-                    return;
-                }
-            
-                recognizedOdometer = odo;
-            
-                showCheckmark();
-                setTimeout(() => {
-                    switchView('session');
-                }, 1000);
-            }            
+            if (odo === "None" || odo === null) {
+                alert("Не удалось распознать показания одометра. Попробуйте сделать другое фото.");
+                hideSpinner();
+                switchView('camera');
+                return;
+            }
+        
+            recognizedOdometer = odo;
+        
+            showCheckmark();
+            setTimeout(() => {
+                switchView('session');
+            }, 1000);            
 
         } else {
             alert("❌ Ошибка от сервера");
