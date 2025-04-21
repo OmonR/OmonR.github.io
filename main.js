@@ -281,8 +281,23 @@ if (backToCameraBtn) {
     });
 }
 
-document.getElementById('submitOdometerPhoto').addEventListener('click', async () => {
-    alert('clicked')
+let reviewHandlerAttached = false;
+
+function showReviewButtons() {
+    const btn = document.getElementById('submitOdometerPhoto');
+
+    if (!reviewHandlerAttached) {
+        btn.addEventListener('click', handleSubmitPhoto);
+        reviewHandlerAttached = true;
+    }
+
+    document.getElementById('reviewButtons').classList.remove('hidden');
+}
+
+
+async function handleSubmitPhoto() {
+    alert('📸 Клик сработал');
+
     showSpinner();
     const base64image = canvas.toDataURL('image/jpeg');
 
@@ -313,7 +328,7 @@ document.getElementById('submitOdometerPhoto').addEventListener('click', async (
             setTimeout(() => switchView('session'), 1000);
         } else if (res.ok && result.status === 'none') {
             alert("Не получилось распознать показания одометра. Попробуйте сделать другое фото.");
-            hideSpinner(); // убираем спиннер, чтобы пользователь мог снова нажать
+            hideSpinner();
         } else {
             throw new Error(result.detail || 'Ошибка отправки');
         }
@@ -323,7 +338,7 @@ document.getElementById('submitOdometerPhoto').addEventListener('click', async (
         alert('⚠️ Не удалось отправить фото. Попробуйте ещё раз.');
         hideSpinner();
     }
-});
+}
 
 
 
