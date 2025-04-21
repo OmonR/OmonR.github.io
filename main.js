@@ -291,8 +291,6 @@ document.getElementById('submitOdometerPhoto').addEventListener('click', async (
     const payload = {
         init_data: initData,
         car_id: Number(carId),
-        latitude: marker.lat,
-        longitude: marker.lng,
         photo: base64image,
         action,
     };
@@ -306,20 +304,26 @@ document.getElementById('submitOdometerPhoto').addEventListener('click', async (
             },
             body: JSON.stringify(payload),
         });
+
         const result = await res.json();
 
         if (res.ok && result.status === 'ok') {
             showCheckmark();
             setTimeout(() => switchView('session'), 1000);
+        } else if (res.ok && result.status === 'none') {
+            alert("Не получилось распознать показания одометра. Попробуйте сделать другое фото.");
+            hideSpinner(); // убираем спиннер, чтобы пользователь мог снова нажать
         } else {
             throw new Error(result.detail || 'Ошибка отправки');
         }
+
     } catch (err) {
         showError(err.message || 'Ошибка соединения');
         alert('⚠️ Не удалось отправить фото. Попробуйте ещё раз.');
         hideSpinner();
     }
 });
+
 
 
 async function notifyServer(eventPayload) {
