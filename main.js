@@ -282,6 +282,7 @@ if (backToCameraBtn) {
 }
 
 document.getElementById('submitOdometerPhoto').addEventListener('click', async () => {
+    alert('clicked')
     showSpinner();
     const base64image = canvas.toDataURL('image/jpeg');
 
