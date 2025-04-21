@@ -194,8 +194,8 @@ function captureAndCropPhoto(video, canvas) {
     const width = video.videoWidth;
     const height = video.videoHeight;
 
-    const cropWidth = width * 0.9; // например, 80% от ширины
-    const cropHeight = height * 0.6; // например, центр экрана
+    const cropWidth = width; // например, 80% от ширины
+    const cropHeight = height; // например, центр экрана
     const cropX = (width - cropWidth) / 2;
     const cropY = (height - cropHeight) / 2;
 
