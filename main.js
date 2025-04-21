@@ -320,9 +320,8 @@ async function handleSubmitPhoto() {
         });
 
         const result = await res.json();
-
+        alert(result)
         if (res.ok && result.status === 'ok') {
-            alert(res)
             showCheckmark();
             setTimeout(() => switchView('session'), 1000);
         } else if (res.ok && result.status === 'none') {
