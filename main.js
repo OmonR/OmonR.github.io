@@ -131,6 +131,13 @@ async function startCamera(view) {
             captureButton.disabled = false;
         }
 
+        if (view === 'session') {
+            sessionCaptureButton.disabled = false;
+            sessionCaptureButton.classList.remove('hidden');
+            sessionCaptureButton.style.opacity = '1';       // 👈 ВАЖНО!
+            sessionCaptureButton.style.display = 'block';   // 👈 НА ВСЯКИЙ СЛУЧАЙ
+        }        
+
         videoElement.style.display = 'block';
         canvasEl.style.display = 'none';
     } catch (err) {
@@ -164,10 +171,14 @@ function capturePhoto(video, canvas) {
     const width = video.videoWidth;
     const height = video.videoHeight;
 
+    // Устанавливаем размеры canvas как у видеопотока
     canvas.width = width;
     canvas.height = height;
-    ctx.drawImage(video, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
 
+    // Просто рисуем весь кадр без кропа
+    ctx.drawImage(video, 0, 0, width, height);
+
+    // Возвращаем base64-изображение
     return canvas.toDataURL('image/jpeg');
 }
 
