@@ -299,7 +299,6 @@ let recognizedOdometer = null;
 
 
 async function handleSubmitPhoto() {
-    alert('📸 Клик сработал');
     showSpinner();
 
     const payload = {
@@ -326,7 +325,7 @@ async function handleSubmitPhoto() {
             const odo = result.odometer;
             
             if (odo === "None" || odo === null) {
-                alert("Не удалось распознать показания одометра. Попробуйте сделать другое фото.");
+                alert("Не удалось распознать показания одометра");
                 hideSpinner();
                 switchView('camera');
                 return;
@@ -340,14 +339,14 @@ async function handleSubmitPhoto() {
             }, 1000);            
 
         } else {
-            alert("❌ Ошибка от сервера");
+            alert("❌ Произошла ошибка");
             hideSpinner();
         }
 
     } catch (err) {
         console.error(err);
         showError(err.message || 'Ошибка соединения');
-        alert('⚠️ Не удалось отправить фото. Попробуйте ещё раз.');
+        alert('⚠️ Не удалось отправить фото');
         hideSpinner();
     }
 }
