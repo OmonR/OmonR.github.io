@@ -63,9 +63,11 @@
         <!-- Session View -->
         <div id="sessionView" class="view">
             <div class="session-header">
-                <h2>Car Photos</h2>
-                <p id="photoCounter">0 of 4 photos taken</p>
-            </div>
+                <h2>Фотографии автомобиля</h2>
+                <div id="photoCounter" class="photo-indicators">
+                    <!-- будут вставлены слоты с фото -->
+                </div>
+            </div>            
             <div class="camera-container">
                 <video id="sessionVideo" autoplay playsinline></video>
                 <canvas id="sessionCanvas"></canvas>
@@ -75,7 +77,6 @@
                     </button>
                 </div>
             </div>
-            <div id="photoGrid" class="photo-grid"></div>
         </div>
 
         <nav class="nav-tabs">

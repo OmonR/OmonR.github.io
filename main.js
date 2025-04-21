@@ -191,11 +191,10 @@ function captureAndCropPhoto(video, canvas) {
 
 
 function updateSessionUI() {
-    photoCounter.textContent = `${sessionPhotos.length} из ${REQUIRED_PHOTOS} фото`;
-    photoGrid.innerHTML = '';
+    photoCounter.innerHTML = '';
     for (let i = 0; i < REQUIRED_PHOTOS; i++) {
         const slot = document.createElement('div');
-        slot.className = `photo-slot ${sessionPhotos[i] ? 'filled' : 'empty'}`;
+        slot.className = `photo-slot-mini ${sessionPhotos[i] ? 'filled' : 'empty'}`;
         if (sessionPhotos[i]) {
             const img = document.createElement('img');
             img.src = sessionPhotos[i];
@@ -204,7 +203,7 @@ function updateSessionUI() {
         } else {
             slot.textContent = i + 1;
         }
-        photoGrid.appendChild(slot);
+        photoCounter.appendChild(slot);
     }
 }
 
