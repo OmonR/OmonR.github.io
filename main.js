@@ -4,7 +4,8 @@ const webapp = window.Telegram.WebApp;
  
  
  // Get signed initData string
- const initData = webapp.initData;
+ const initData = encodeURIComponent(webapp.initData);
+
  
  // Set theme variables from Telegram theme params
  const params = webapp.themeParams;
@@ -509,17 +510,39 @@ const webapp = window.Telegram.WebApp;
  
  // 6. Initialize Application
  function initApp() {
-     fetch('https://autopark-gthost.amvera.io/api/auth', {
-         method: 'POST',
-         headers: {
-             'Authorization': `tma ${initData}`
-         }
-     })
-     .then(res => res.json())
-     .catch(err => {
-         console.error('Auth failed', err);
-     });
- }
+    if (!initData) {
+        console.error('No initData available');
+        showForbiddenError();
+        return;
+    }
+
+    fetch('https://autopark-gthost.amvera.io/api/auth', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${initData}`  // Changed from 'tma' to 'Bearer'
+        }
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+    })
+    .then(data => {
+        if (data.status === 'ok') {
+            console.log('Authentication successful');
+            switchView('map');
+        } else {
+            console.error('Authentication failed:', data);
+            showForbiddenError();
+        }
+    })
+    .catch(err => {
+        console.error('Auth failed:', err);
+        showForbiddenError();
+    });
+}
  
  // Start the application
  if (!initData) {
