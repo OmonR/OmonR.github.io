@@ -5,12 +5,7 @@ const webapp = window.Telegram.WebApp;
  
  // Get signed initData string
  const initData = webapp.initData;
- if (!initData) {
-    showForbiddenError();
-} else {
-    initApp();
-    switchView('map');
-}
+
  // Set theme variables from Telegram theme params
  const params = webapp.themeParams;
  const root = document.documentElement;
@@ -107,6 +102,13 @@ const webapp = window.Telegram.WebApp;
          updateSessionUI();
      }
  }
+
+ if (!initData) {
+    showForbiddenError();
+} else {
+    initApp();
+    switchView('map');
+}
  
  function createDraggableMarker(latlng) {
      if (currentMarker) {
