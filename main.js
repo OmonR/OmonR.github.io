@@ -8,7 +8,6 @@ const errorMessage = document.getElementById('error-message');
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const captureButton = document.getElementById('captureButton');
-const backButton = document.getElementById('backButton');
 const odometerInput = document.getElementById('odometerInput');
 const odometer = document.getElementById('odometer');
 const continueToPhotos = document.getElementById('continueToPhotos');
@@ -148,7 +147,6 @@ function resetCameraView() {
     canvas.style.display = 'none';
     captureButton.style.display = 'block';
     odometerInput.classList.add('hidden');
-    backButton.classList.add('hidden');
     odometer.value = '';
 }
 
@@ -472,7 +470,6 @@ sessionCaptureButton.addEventListener('click', () => {
 });
 
 continueButton.addEventListener('click', () => switchView('camera'));
-backButton.addEventListener('click', () => startCamera('camera'));
 
 odometer.addEventListener('input', () => {
     continueToPhotos.disabled = !odometer.value;
