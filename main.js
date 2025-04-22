@@ -1,3 +1,4 @@
+// 💡 Удалён дубликат initWebApp и проверка на несуществующие DOM-элементы
 let initData = "";
 
 const navButtons = document.querySelectorAll('.nav-button');
@@ -38,20 +39,20 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 odometer.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         e.preventDefault();
-        
+
         if (!odometer.value) {
             showError('Пожалуйста, введите показания одометра');
             return;
         }
-        
-        // Добавляем вибрацию
+
         if (window.Telegram?.WebApp?.HapticFeedback) {
             Telegram.WebApp.HapticFeedback.impactOccurred('light');
         }
-        
+
         switchView('session');
     }
 });
+
 
 // 4. Utility Functions
 function showError(message) {
@@ -561,6 +562,14 @@ function initWebApp() {
     }
 })();
 
+(function startApp() {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initWebApp);
+    } else {
+        initWebApp();
+    }
+})();
+
 function initWebApp() {
     const webapp = window.Telegram?.WebApp;
 
@@ -573,7 +582,7 @@ function initWebApp() {
     webapp.ready();
     webapp.expand();
 
-    const initData = webapp.initData || "";
+    initData = webapp.initData || "";
     console.log("🧾 initData received:", initData);
 
     if (!initData || initData.length < 10) {
@@ -583,7 +592,6 @@ function initWebApp() {
         return;
     }
 
-    // 💄 Установка Telegram theme
     const params = webapp.themeParams;
     const root = document.documentElement;
 
