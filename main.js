@@ -510,15 +510,31 @@ continueToPhotos.addEventListener('click', () => {
 
 // 6. Initialize Application
 function initApp() {
-    fetch('https://autopark-gthost.amvera.io/api/auth', {
+    fetch(`https://autopark-gthost.amvera.io/api/auth?action=${action}`, {
         method: 'POST',
         headers: {
             'Authorization': `tma ${initData}`
         }
     })
     .then(res => res.json())
+    .then(data => {
+        if (data.status === 'conflict' || data.status === 'expired') {
+            showError(data.message);
+            setTimeout(() => webapp.close(), 2000);
+            return;
+        }
+
+        if (data.status !== 'ok') {
+            showForbiddenError();
+            webapp.close();
+        } else {
+            switchView('map'); // или другой view, если всё ОК
+        }
+    })
     .catch(err => {
         console.error('Auth failed', err);
+        showForbiddenError();
+        webapp.close();
     });
 }
 
