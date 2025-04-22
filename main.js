@@ -1,26 +1,4 @@
 
-const webapp = window.Telegram.WebApp;
-webapp.ready();
-webapp.expand();
-
-
-// Get signed initData string
-const initData = webapp.initData;
-
-// Set theme variables from Telegram theme params
-const params = webapp.themeParams;
-const root = document.documentElement;
-
-if (params) {
-    root.style.setProperty('--tg-theme-bg-color', params.bg_color);
-    root.style.setProperty('--tg-theme-text-color', params.text_color);
-    root.style.setProperty('--tg-theme-hint-color', params.hint_color);
-    root.style.setProperty('--tg-theme-link-color', params.link_color);
-    root.style.setProperty('--tg-theme-button-color', params.button_color);
-    root.style.setProperty('--tg-theme-button-text-color', params.button_text_color);
-}
-
-// 2. DOM Elements and Variables
 const navButtons = document.querySelectorAll('.nav-button');
 const views = document.querySelectorAll('.view');
 const locationButton = document.getElementById('locationButton');
@@ -508,18 +486,24 @@ continueToPhotos.addEventListener('click', () => {
     if (odometer.value) switchView('session');
 });
 
-// 6. Initialize Application
-function initApp() {
+function initApp(initData) {
+    console.log("🚀 initApp called with initData:", initData);
+
     fetch(`https://autopark-gthost.amvera.io/api/auth?action=${action}`, {
         method: 'POST',
         headers: {
             'Authorization': `tma ${initData}`
         }
     })
-    .then(res => res.json())
+    .then(res => {
+        console.log("📡 /api/auth response:", res.status);
+        return res.json();
+    })
     .then(data => {
+        console.log("✅ /api/auth JSON:", data);
+
         if (data.status === 'conflict' || data.status === 'expired') {
-            showError(data.message);
+            showError(data.message || "Сессия недействительна");
             setTimeout(() => webapp.close(), 2000);
             return;
         }
@@ -528,20 +512,50 @@ function initApp() {
             showForbiddenError();
             webapp.close();
         } else {
-            switchView('map'); // или другой view, если всё ОК
+            switchView('map'); // если всё ок — стартуем
         }
     })
     .catch(err => {
-        console.error('Auth failed', err);
+        console.error('❌ Auth fetch failed:', err);
         showForbiddenError();
         webapp.close();
     });
 }
+window.addEventListener("DOMContentLoaded", () => {
+    const webapp = window.Telegram?.WebApp;
 
-// Start the application
-if (!initData) {
-    showForbiddenError();
-} else {
-    initApp();
-    switchView('map');
-}
+    if (!webapp) {
+        console.error("❌ Telegram WebApp SDK не найден");
+        showForbiddenError();
+        return;
+    }
+
+    webapp.ready();
+    webapp.expand();
+
+    const initData = webapp.initData || "";
+    console.log("🧾 initData received:", initData);
+
+    if (!initData || initData.length < 10) {
+        console.warn("⚠️ initData отсутствует или слишком короткий");
+        showForbiddenError();
+        webapp.close?.();
+        return;
+    }
+
+    // 💄 Установка Telegram theme
+    const params = webapp.themeParams;
+    const root = document.documentElement;
+
+    if (params) {
+        root.style.setProperty('--tg-theme-bg-color', params.bg_color);
+        root.style.setProperty('--tg-theme-text-color', params.text_color);
+        root.style.setProperty('--tg-theme-hint-color', params.hint_color);
+        root.style.setProperty('--tg-theme-link-color', params.link_color);
+        root.style.setProperty('--tg-theme-button-color', params.button_color);
+        root.style.setProperty('--tg-theme-button-text-color', params.button_text_color);
+    }
+
+    // 🚀 Запуск логики
+    initApp(initData);
+});
