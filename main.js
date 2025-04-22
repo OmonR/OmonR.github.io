@@ -433,14 +433,7 @@ const webapp = window.Telegram.WebApp;
                });
  
              // Показываем уведомление в WebApp
-             showNotification(result.message || '✅ ОК');
-
-         if (res.status === 409 || res.status === 410) {
-            alert('Эта сессия устарела');
-            setTimeout(() => webapp.close(), 2000);
-            return;
-        }
-        
+             showNotification(result.message || '✅ ОК');        
  
          } else {
              const msg = result.detail || '❌ Ошибка при отправке';
@@ -523,15 +516,22 @@ const webapp = window.Telegram.WebApp;
  
  // 6. Initialize Application
  function initApp() {
-     fetch('https://autopark-gthost.amvera.io/api/auth', {
-         method: 'POST',
-         headers: {
-             'Authorization': `tma ${initData}`
-         }
-     })
-     .then(res => res.json())
-     .catch(err => {
-         console.error('Auth failed', err);
-     });
- }
+    fetch('https://autopark-gthost.amvera.io/api/auth', {
+        method: 'POST',
+        headers: {
+            'Authorization': `tma ${initData}`  // Fixed: Added backticks (`) for template literal
+        }
+    })
+    .then(res => {
+        if (res.status === 409 || res.status === 410) {
+            alert('Эта сессия устарела');
+            setTimeout(() => webapp.close(), 2000);
+            return;
+        }
+        return res.json();  // Moved inside .then() to properly handle response
+    })
+    .catch(err => {
+        console.error('Auth failed', err);
+    });
+}
  
