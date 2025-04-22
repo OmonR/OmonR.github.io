@@ -434,6 +434,13 @@ const webapp = window.Telegram.WebApp;
  
              // Показываем уведомление в WebApp
              showNotification(result.message || '✅ ОК');
+
+         if (res.status === 409 || res.status === 410) {
+            alert('Эта сессия устарела');
+            setTimeout(() => webapp.close(), 2000);
+            return;
+        }
+        
  
          } else {
              const msg = result.detail || '❌ Ошибка при отправке';
