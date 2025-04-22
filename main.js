@@ -1,3 +1,4 @@
+let initData = "";
 
 const navButtons = document.querySelectorAll('.nav-button');
 const views = document.querySelectorAll('.view');
@@ -232,11 +233,6 @@ function showCheckmark() {
     const el = document.getElementById('photoStatus');
     el.classList.add('check');
     el.querySelector('.spinner').style.display = 'none';
-}
-
-
-function showReviewButtons() {
-    document.getElementById('reviewButtons').classList.remove('hidden');
 }
 
 
@@ -521,7 +517,9 @@ function initApp(initData) {
         webapp.close();
     });
 }
-window.addEventListener("DOMContentLoaded", () => {
+
+
+function initWebApp() {
     const webapp = window.Telegram?.WebApp;
 
     if (!webapp) {
@@ -556,6 +554,50 @@ window.addEventListener("DOMContentLoaded", () => {
         root.style.setProperty('--tg-theme-button-text-color', params.button_text_color);
     }
 
-    // 🚀 Запуск логики
     initApp(initData);
-});
+}
+(function startApp() {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initWebApp);
+    } else {
+        initWebApp();
+    }
+})();
+
+function initWebApp() {
+    const webapp = window.Telegram?.WebApp;
+
+    if (!webapp) {
+        console.error("❌ Telegram WebApp SDK не найден");
+        showForbiddenError();
+        return;
+    }
+
+    webapp.ready();
+    webapp.expand();
+
+    const initData = webapp.initData || "";
+    console.log("🧾 initData received:", initData);
+
+    if (!initData || initData.length < 10) {
+        console.warn("⚠️ initData отсутствует или слишком короткий");
+        showForbiddenError();
+        webapp.close?.();
+        return;
+    }
+
+    // 💄 Установка Telegram theme
+    const params = webapp.themeParams;
+    const root = document.documentElement;
+
+    if (params) {
+        root.style.setProperty('--tg-theme-bg-color', params.bg_color);
+        root.style.setProperty('--tg-theme-text-color', params.text_color);
+        root.style.setProperty('--tg-theme-hint-color', params.hint_color);
+        root.style.setProperty('--tg-theme-link-color', params.link_color);
+        root.style.setProperty('--tg-theme-button-color', params.button_color);
+        root.style.setProperty('--tg-theme-button-text-color', params.button_text_color);
+    }
+
+    initApp(initData);
+}
