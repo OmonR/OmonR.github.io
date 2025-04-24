@@ -304,63 +304,89 @@ const webapp = window.Telegram.WebApp;
  
  
  let recognizedOdometer = null;
+
+ async function uploadOdometerPhoto(base64Photo, recognizedPhotoBase64, carId, odometerValue, initData) {
+    try {
+      const response = await fetch("https://autopark-gthost.amvera.io/api/odometer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `tma ${initData}`
+        },
+        body: JSON.stringify({
+          photo: base64Photo,
+          recognized_photo: recognizedPhotoBase64 || null,
+          car_id: carId,
+          odometer_value: odometerValue || null
+        })
+      });
+  
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.detail || "Failed to upload odometer photo");
+  
+      console.log("📸 Фото успешно загружено:", result);
+      return result;
+    } catch (error) {
+      console.error("❌ Ошибка загрузки фото одометра:", error);
+      return null;
+    }
+  }  
  
  
- async function handleSubmitPhoto() {
-     showSpinner();
- 
-     const base64image = canvas.toDataURL('image/jpeg');
- 
-     const payload = {
-         init_data: initData,
-         car_id: Number(carId),
-         photo: base64image,
-         action,
-     };
- 
-     try {
-         const res = await fetch('https://autopark-gthost.amvera.io/api/odometer', {
-             method: 'POST',
-             headers: {
-                 'Content-Type': 'application/json',
-                 'Authorization': `tma ${initData}`
-             },
-             body: JSON.stringify(payload),
-         });
- 
-         const result = await res.json();
-         alert(JSON.stringify(result, null, 2));
- 
-         if (res.ok && result.status === 'ok') {
-             const odo = result.odometer;
-             
-             if (odo === "None" || odo === null) {
-                 alert("Не удалось распознать показания одометра");
-                 hideSpinner();
-                 switchView('camera');
-                 return;
-             }
-         
-             recognizedOdometer = odo;
-         
-             showCheckmark();
-             setTimeout(() => {
-                 switchView('session');
-             }, 1000);            
- 
-         } else {
-             alert("❌ Произошла ошибка");
-             hideSpinner();
-         }
- 
-     } catch (err) {
-         console.error(err);
-         showError(err.message || 'Ошибка соединения');
-         alert('⚠️ Не удалось отправить фото');
-         hideSpinner();
-     }
- }
- 
+  async function handleSubmitPhoto() {
+    showSpinner();
+
+    const base64image = canvas.toDataURL('image/jpeg');
+    const recognizedBase64 = recognizedCanvas?.toDataURL('image/jpeg'); // если есть
+
+    const payload = {
+        car_id: Number(carId),
+        photo: base64image,
+        recognized_photo: recognizedBase64 || null,
+        odometer_value: null
+    };
+
+    try {
+        const res = await fetch('https://autopark-gthost.amvera.io/api/odometer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `tma ${initData}`
+            },
+            body: JSON.stringify(payload),
+        });
+
+        const result = await res.json();
+
+        if (res.ok && result.status === 'ok') {
+            const odo = result.odometer;
+
+            if (odo === "None" || odo === null) {
+                hideSpinner();
+                switchView('camera');
+                return;
+            }
+
+            recognizedOdometer = odo;
+
+            showCheckmark();
+            setTimeout(() => {
+                switchView('session');
+            }, 1000);
+
+        } else if (result.status === 'processing') {
+            // Обработка "в процессе", если нужно
+            hideSpinner();
+        } else {
+            hideSpinner();
+        }
+
+    } catch (err) {
+        console.error(err);
+        showError(err.message || 'Ошибка соединения');
+        hideSpinner();
+    }
+} 
  
  async function notifyServer(eventPayload) {
      const body = { chat_id: chatId, message_id: msgId, event: eventPayload, init_data: initData};
