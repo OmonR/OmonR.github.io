@@ -262,11 +262,6 @@ const webapp = window.Telegram.WebApp;
  }
  
  
- function showReviewButtons() {
-     document.getElementById('reviewButtons').classList.remove('hidden');
- }
- 
- 
  function hideReviewButtons() {
      document.getElementById('reviewButtons').classList.add('hidden');
  }
@@ -332,9 +327,7 @@ const webapp = window.Telegram.WebApp;
   }  
  
 
- 
- 
-async function handleSubmitPhoto() {
+  async function handleSubmitPhoto() {
     showSpinner();
 
     const base64image = canvas.toDataURL('image/jpeg');
@@ -347,8 +340,10 @@ async function handleSubmitPhoto() {
         odometer_value: null
     };
 
+    alert("Размер фото: " + (base64image.length / 1024).toFixed(2) + " KB");
+
     try {
-        const res = await fetch('https://autopark-gthost.amvera.io/api/odometer', {
+        const response = await fetch('https://autopark-gthost.amvera.io/api/odometer', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -357,9 +352,12 @@ async function handleSubmitPhoto() {
             body: JSON.stringify(payload),
         });
 
-        const result = await res.json();
+        alert("Запрос отправлен\nHTTP статус: " + response.status);
 
-        if (res.ok && result.status === 'ok') {
+        const result = await response.json();
+        alert("Ответ получен\n" + JSON.stringify(result));
+
+        if (response.ok && result.status === 'ok') {
             const odo = result.odometer;
 
             if (odo === "None" || odo === null) {
@@ -376,19 +374,18 @@ async function handleSubmitPhoto() {
             }, 1000);
 
         } else if (result.status === 'processing') {
-            // Обработка "в процессе", если нужно
             hideSpinner();
         } else {
             hideSpinner();
         }
 
     } catch (err) {
-        console.error(err);
+        alert("[ERROR] Ошибка при отправке запроса\n" + (err.message || "Unknown error"));
         showError(err.message || 'Ошибка соединения');
         hideSpinner();
     }
-} 
- 
+}
+
 
  async function notifyServer(eventPayload) {
      const body = { chat_id: chatId, message_id: msgId, event: eventPayload, init_data: initData};
