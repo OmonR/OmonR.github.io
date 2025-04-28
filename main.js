@@ -301,17 +301,6 @@ const webapp = window.Telegram.WebApp;
  
  let reviewHandlerAttached = false;
  
- function showReviewButtons() {
-     const btn = document.getElementById('submitOdometerPhoto');
- 
-     if (!reviewHandlerAttached) {
-         btn.addEventListener('click', handleSubmitPhoto);
-         reviewHandlerAttached = true;
-     }
- 
-     document.getElementById('reviewButtons').classList.remove('hidden');
- }
- 
  
  let recognizedOdometer = null;
 
@@ -526,6 +515,12 @@ async function handleSubmitPhoto() {
  continueToPhotos.addEventListener('click', () => {
      if (odometer.value) switchView('session');
  });
+
+const submitOdometerPhotoButton = document.getElementById('submitOdometerPhoto');
+if (submitOdometerPhotoButton) {
+    submitOdometerPhotoButton.addEventListener('click', handleSubmitPhoto);
+}
+
  
  // 6. Initialize Application
  function initApp() {
