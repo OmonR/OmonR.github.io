@@ -179,21 +179,31 @@ const webapp = window.Telegram.WebApp;
      odometer.value = '';
  }
  
- function capturePhoto(video, canvas) {
-     const ctx = canvas.getContext('2d');
-     const width = video.videoWidth;
-     const height = video.videoHeight;
- 
-     // Устанавливаем размеры canvas как у видеопотока
-     canvas.width = width;
-     canvas.height = height;
- 
-     // Просто рисуем весь кадр без кропа
-     ctx.drawImage(video, 0, 0, width, height);
- 
-     // Возвращаем base64-изображение
-     return canvas.toDataURL('image/jpeg');
- }
+ function capturePhotoBlob(video, canvas) {
+    return new Promise((resolve, reject) => {
+        const ctx = canvas.getContext('2d');
+        const width = video.videoWidth;
+        const height = video.videoHeight;
+
+        if (width === 0 || height === 0) {
+            reject(new Error("Camera not ready"));
+            return;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(video, 0, 0, width, height);
+
+        canvas.toBlob(blob => {
+            if (blob) {
+                resolve(blob);
+            } else {
+                reject(new Error("Failed to create blob"));
+            }
+        }, 'image/jpeg', 0.8); // качество можно настроить
+    });
+}
+
  
  
  function captureAndCropPhoto(video, canvas) {
@@ -305,89 +315,66 @@ const webapp = window.Telegram.WebApp;
  
  let recognizedOdometer = null;
 
- async function uploadOdometerPhoto(base64Photo, recognizedPhotoBase64, carId, odometerValue, initData) {
-    try {
-      const response = await fetch("https://autopark-gthost.amvera.io/api/odometer", {
+ async function uploadOdometerPhotoBlob(blob, recognizedBlob, carId, odometerValue, initData) {
+    const formData = new FormData();
+    formData.append("photo", blob, "photo.jpg");
+
+    if (recognizedBlob) {
+        formData.append("recognized_photo", recognizedBlob, "recognized_photo.jpg");
+    }
+
+    formData.append("car_id", carId);
+    formData.append("odometer_value", odometerValue || "");
+
+    const response = await fetch("https://autopark-gthost.amvera.io/api/odometer", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `tma ${initData}`
+            "Authorization": `tma ${initData}`
         },
-        body: JSON.stringify({
-          photo: base64Photo,
-          recognized_photo: recognizedPhotoBase64 || null,
-          car_id: carId,
-          odometer_value: odometerValue || null
-        })
-      });
-  
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.detail || "Failed to upload odometer photo");
-  
-      console.log("📸 Фото успешно загружено:", result);
-      return result;
-    } catch (error) {
-      console.error("❌ Ошибка загрузки фото одометра:", error);
-      return null;
+        body: formData
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+        throw new Error(result.detail || "Failed to upload odometer photo");
     }
-  }  
+    return result;
+}
+
  
  
-  async function handleSubmitPhoto() {
+async function handleSubmitPhoto() {
     showSpinner();
 
-    const base64image = canvas.toDataURL('image/jpeg');
-    const recognizedBase64 = recognizedCanvas?.toDataURL('image/jpeg'); // если есть
-
-    const payload = {
-        car_id: Number(carId),
-        photo: base64image,
-        recognized_photo: recognizedBase64 || null,
-        odometer_value: null
-    };
-
     try {
-        const res = await fetch('https://autopark-gthost.amvera.io/api/odometer', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `tma ${initData}`
-            },
-            body: JSON.stringify(payload),
-        });
+        const blob = await capturePhotoBlob(video, canvas);
 
-        const result = await res.json();
+        let recognizedBlob = null;
+        if (recognizedCanvas) {
+            recognizedBlob = await new Promise((resolve, reject) => {
+                recognizedCanvas.toBlob(blob => {
+                    if (blob) resolve(blob);
+                    else reject(new Error("Failed to create recognized blob"));
+                }, 'image/jpeg', 0.8);
+            });
+        }
 
-        if (res.ok && result.status === 'ok') {
-            const odo = result.odometer;
+        const result = await uploadOdometerPhotoBlob(blob, recognizedBlob, carId, null, initData);
 
-            if (odo === "None" || odo === null) {
-                hideSpinner();
-                switchView('camera');
-                return;
-            }
-
-            recognizedOdometer = odo;
-
+        if (result?.status === 'ok') {
+            recognizedOdometer = result.odometer;
             showCheckmark();
-            setTimeout(() => {
-                switchView('session');
-            }, 1000);
-
-        } else if (result.status === 'processing') {
-            // Обработка "в процессе", если нужно
-            hideSpinner();
+            setTimeout(() => switchView('session'), 1000);
         } else {
             hideSpinner();
         }
-
     } catch (err) {
         console.error(err);
         showError(err.message || 'Ошибка соединения');
         hideSpinner();
     }
-} 
- 
+}
+
  async function notifyServer(eventPayload) {
      const body = { chat_id: chatId, message_id: msgId, event: eventPayload, init_data: initData};
      try {
@@ -515,7 +502,7 @@ const webapp = window.Telegram.WebApp;
  });
  
  sessionCaptureButton.addEventListener('click', () => {
-     const photoData = capturePhoto(sessionVideo, sessionCanvas);
+     const photoData = capturePhotoBlob(sessionVideo, sessionCanvas);
      if (sessionPhotos.length < REQUIRED_PHOTOS) {
          sessionPhotos.push(photoData);
      }
