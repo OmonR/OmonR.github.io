@@ -42,9 +42,10 @@ body {
     padding-bottom: 3.5rem;
 }
 
+/* background: gray; */
 /* background: var(--tg-theme-hint-color); */
 .nav-button:disabled {
-    background: gray;
+    background: var(--tg-theme-hint-color);
     opacity: 0.4;
     cursor: not-allowed;
     pointer-events: none;
@@ -54,7 +55,7 @@ body {
     top: 50%;
     transform: translateY(-50%);
     position: absolute;
-    background: gray;
+    background: var(--tg-theme-hint-color);
     height: 0.1rem;
     width: 70%;
 }
@@ -74,7 +75,7 @@ body {
 
 /* background: var(--tg-theme-button-color); */
 .nav-button.active {
-    background: red;
+    background: var(--tg-theme-button-color);
 }
 
 .nav-button img {
@@ -440,10 +441,11 @@ body {
 
 /* Белая кнопка с обводкой */
 .white-button {
-    background-color:gray ;
+    background-color: gray;
 
 }
-.white-button img{
+
+.white-button img {
     width: 2rem;
     height: 2rem;
 }
