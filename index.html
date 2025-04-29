@@ -14,19 +14,13 @@
         <h1>❌ Forbidden</h1>
     </div>
     <div class="container">
-
         <!-- Map View -->
         <div id="mapView" class="view active block_map">
             <div id="map"></div>
             <div class="block"></div>
             <div class="map_buttons">
                 <button id="locationButton" class="round-button location-button">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="10" r="3" />
-                        <path
-                            d="M12 2a8 8 0 0 0-8 8c0 1.892.402 3.13 1.5 4.5L12 22l6.5-7.5c1.098-1.37 1.5-2.608 1.5-4.5a8 8 0 0 0-8-8Z" />
-                    </svg>
+                    <img src="/assets/Map Point Icon.svg" alt="">
                 </button>
                 <button id="continueButton" class="round-button continue-button hidden">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -35,7 +29,6 @@
                     </svg>
                 </button>
             </div>
-
         </div>
 
         <!-- Camera View -->
@@ -52,6 +45,7 @@
                     </button>
                 </div>
             </div>
+
             <p id="camera-error" class="error"></p>
             <div id="odometerInput" class="odometer-input hidden">
                 <input type="number" id="odometer" placeholder="Подтвердите показания одометра" class="input-field"
@@ -63,12 +57,8 @@
             </div>
             <!-- 🔘 Кнопки подтверждения фото -->
             <div id="reviewButtons" class="review-buttons hidden">
-                <div class="pt-5"></div>
                 <button id="backToCamera" class="circle-button white-button">
-                    <svg width="24" height="24" viewBox="0 0 24 24">
-                        <path d="M15 18l-6-6 6-6" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"
-                            stroke-linejoin="round" />
-                    </svg>
+                   <img src="assets/Restart.svg" alt="">
                 </button>
                 <button id="submitOdometerPhoto" class="circle-button blue-button">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -100,19 +90,15 @@
 
         <nav class="nav-tabs">
             <button class="nav-button active" data-view="map">
-                <!-- <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="10" r="3" />
-                    <path
-                        d="M12 2a8 8 0 0 0-8 8c0 1.892.402 3.13 1.5 4.5L12 22l6.5-7.5c1.098-1.37 1.5-2.608 1.5-4.5a8 8 0 0 0-8-8Z" />
-                </svg> -->
-                <div class="nav-dot"></div>
+                <img src="/assets/Map Point Icon.svg" alt="">
+                <!-- <div class="nav-dot"></div> -->
             </button>
             <button class="nav-button" data-view="camera" disabled>
-                <div class="nav-dot"></div>
+                <img src="/assets/Odometer.svg" alt="">
             </button>
             <button class="nav-button" data-view="session" disabled>
-                <div class="nav-dot"></div>
+
+                <img src="/assets/Travel and places Icon.svg" alt="">
             </button>
         </nav>
 
@@ -121,7 +107,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="main.js"></script>
-    <!-- <script src="button.js"></script> -->
-</body>
+   </body>
 
 </html>
