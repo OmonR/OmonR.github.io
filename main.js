@@ -327,7 +327,7 @@ const webapp = window.Telegram.WebApp;
   }  
  
 
-  async function handleSubmitPhoto() {
+async function handleSubmitPhoto() {
     showSpinner();
 
     try {
@@ -341,23 +341,10 @@ const webapp = window.Telegram.WebApp;
         const base64image = canvas.toDataURL('image/jpeg');
         alert("[DEBUG] base64image создан. Длина: " + base64image.length);
 
-        let recognizedBase64 = null;
-        if (recognizedCanvas) {
-            alert("[DEBUG] Проверяем recognizedCanvas размеры...");
-            if (recognizedCanvas.width === 0 || recognizedCanvas.height === 0) {
-                alert("[WARNING] recognizedCanvas пустой. Пропускаем его.");
-            } else {
-                recognizedBase64 = recognizedCanvas.toDataURL('image/jpeg');
-                alert("[DEBUG] recognizedBase64 создан. Длина: " + recognizedBase64.length);
-            }
-        } else {
-            alert("[WARNING] recognizedCanvas не найден. Пропускаем его.");
-        }
-
         const payload = {
             car_id: Number(carId),
             photo: base64image,
-            recognized_photo: recognizedBase64 || null,
+            recognized_photo: null,
             odometer_value: null
         };
 
@@ -393,7 +380,6 @@ const webapp = window.Telegram.WebApp;
         hideSpinner();
     }
 }
-
 
  async function notifyServer(eventPayload) {
      const body = { chat_id: chatId, message_id: msgId, event: eventPayload, init_data: initData};
