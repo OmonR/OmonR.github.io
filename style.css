@@ -43,6 +43,11 @@ body {
     padding-bottom: 3.5rem;
 }
 
+.nav-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
 .nav-button {
     display: flex;
     align-items: center;

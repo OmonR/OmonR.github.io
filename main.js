@@ -78,28 +78,65 @@ const webapp = window.Telegram.WebApp;
      errorMessage.style.display = 'block';
  }
  
+//  function switchView(view) {
+//      hideSpinner();
+//      navButtons.forEach(btn => {
+//          btn.classList.toggle('active', btn.dataset.view === view);
+//      });
+//      views.forEach(v => {
+//          v.classList.toggle('active', v.id === `${view}View`);
+//      });
+ 
+//      // Всегда показываем nav-button при переключении вкладок
+//      document.querySelector('.nav-tabs').classList.remove('hidden');
+ 
+//      if (view === 'camera' || view === 'session') {
+//          startCamera(view);
+//      } else {
+//          stopCamera();
+//      }
+ 
+//      if (view === 'session') {
+//          updateSessionUI();
+//      }
+//  }
+
  function switchView(view) {
-     hideSpinner();
-     navButtons.forEach(btn => {
-         btn.classList.toggle('active', btn.dataset.view === view);
-     });
-     views.forEach(v => {
-         v.classList.toggle('active', v.id === `${view}View`);
-     });
- 
-     // Всегда показываем nav-button при переключении вкладок
-     document.querySelector('.nav-tabs').classList.remove('hidden');
- 
-     if (view === 'camera' || view === 'session') {
-         startCamera(view);
-     } else {
-         stopCamera();
-     }
- 
-     if (view === 'session') {
-         updateSessionUI();
-     }
- }
+    hideSpinner();
+
+    // Перебираем кнопки навигации
+    navButtons.forEach(btn => {
+        const isActive = btn.dataset.view === view;
+
+        // Добавляем или удаляем класс 'active' в зависимости от текущего представления
+        btn.classList.toggle('active', isActive);
+
+        // Если кнопка не активна, добавляем атрибут 'disabled', иначе удаляем его
+        if (isActive) {
+            btn.removeAttribute('disabled'); // Убираем disabled, если кнопка активна
+        } else {
+            btn.setAttribute('disabled', 'true'); // Добавляем disabled, если кнопка не активна
+        }
+    });
+
+    // Переключаем активные представления
+    views.forEach(v => {
+        v.classList.toggle('active', v.id === `${view}View`);
+    });
+
+    // Всегда показываем nav-button при переключении вкладок
+    document.querySelector('.nav-tabs').classList.remove('hidden');
+
+    if (view === 'camera' || view === 'session') {
+        startCamera(view);
+    } else {
+        stopCamera();
+    }
+
+    if (view === 'session') {
+        updateSessionUI();
+    }
+}
 
 //  if (!initData) {
 //     showForbiddenError();
