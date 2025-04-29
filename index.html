@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,72 +8,85 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div id="forbiddenPage" class="forbidden hidden">
         <h1>❌ Forbidden</h1>
     </div>
-
     <div class="container">
+
         <!-- Map View -->
-        <div id="mapView" class="view active">
+        <div id="mapView" class="view active block_map">
             <div id="map"></div>
-            <p id="error-message" class="error"></p>
-            <button id="locationButton" class="round-button location-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 1.892.402 3.13 1.5 4.5L12 22l6.5-7.5c1.098-1.37 1.5-2.608 1.5-4.5a8 8 0 0 0-8-8Z"/></svg>
-            </button>
-            <button id="continueButton" class="round-button continue-button hidden">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-            </button>
+            <div class="block"></div>
+            <div class="map_buttons">
+                <button id="locationButton" class="round-button location-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="10" r="3" />
+                        <path
+                            d="M12 2a8 8 0 0 0-8 8c0 1.892.402 3.13 1.5 4.5L12 22l6.5-7.5c1.098-1.37 1.5-2.608 1.5-4.5a8 8 0 0 0-8-8Z" />
+                    </svg>
+                </button>
+                <button id="continueButton" class="round-button continue-button hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m9 18 6-6-6-6" />
+                    </svg>
+                </button>
+            </div>
+
         </div>
 
         <!-- Camera View -->
-        <div id="cameraView" class="view">
+        <div id="cameraView" class="view pb-5">
+            <div class="session-header">
+                <h2>Фотография одометрa</h2>
+            </div>
             <div class="camera-container">
                 <video id="video" autoplay playsinline></video>
                 <canvas id="canvas"></canvas>
                 <div class="camera-controls">
-                    <button id="captureButton" class="capture-button hidden">
+                    <button id="captureButton" class="capture-button">
                         <div class="capture-button-inner"></div>
                     </button>
                 </div>
             </div>
             <p id="camera-error" class="error"></p>
-
             <div id="odometerInput" class="odometer-input hidden">
-                <input type="number" 
-                    id="odometer" 
-                    placeholder="Подтвердите показания одометра" 
-                    class="input-field"
-                    inputmode="decimal"
-                    enterkeyhint="done">
+                <input type="number" id="odometer" placeholder="Подтвердите показания одометра" class="input-field"
+                    inputmode="decimal" enterkeyhint="done">
             </div>
             <!-- перед reviewButtons -->
             <div id="photoStatus" class="photo-status hidden">
                 <div class="spinner"></div>
             </div>
-
-
             <!-- 🔘 Кнопки подтверждения фото -->
             <div id="reviewButtons" class="review-buttons hidden">
+                <div class="pt-5"></div>
                 <button id="backToCamera" class="circle-button white-button">
                     <svg width="24" height="24" viewBox="0 0 24 24">
-                        <path d="M15 18l-6-6 6-6" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M15 18l-6-6 6-6" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"
+                            stroke-linejoin="round" />
                     </svg>
                 </button>
                 <button id="submitOdometerPhoto" class="circle-button blue-button">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m9 18 6-6-6-6" />
+                    </svg>
                 </button>
             </div>
         </div>
 
         <!-- Session View -->
-        <div id="sessionView" class="view">
+        <div id="sessionView" class="view pb-5">
             <div class="session-header">
                 <h2>Фотографии автомобиля</h2>
                 <div id="photoCounter" class="photo-indicators">
                     <!-- будут вставлены слоты с фото -->
                 </div>
-            </div>            
+            </div>
             <div class="camera-container">
                 <video id="sessionVideo" autoplay playsinline></video>
                 <canvas id="sessionCanvas"></canvas>
@@ -86,19 +100,28 @@
 
         <nav class="nav-tabs">
             <button class="nav-button active" data-view="map">
+                <!-- <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="10" r="3" />
+                    <path
+                        d="M12 2a8 8 0 0 0-8 8c0 1.892.402 3.13 1.5 4.5L12 22l6.5-7.5c1.098-1.37 1.5-2.608 1.5-4.5a8 8 0 0 0-8-8Z" />
+                </svg> -->
                 <div class="nav-dot"></div>
             </button>
-            <button class="nav-button" data-view="camera">
+            <button class="nav-button" data-view="camera" disabled>
                 <div class="nav-dot"></div>
             </button>
-            <button class="nav-button" data-view="session">
+            <button class="nav-button" data-view="session" disabled>
                 <div class="nav-dot"></div>
             </button>
         </nav>
+
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="main.js"></script>
+    <!-- <script src="button.js"></script> -->
 </body>
+
 </html>

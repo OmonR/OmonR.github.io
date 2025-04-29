@@ -34,20 +34,26 @@ body {
 .nav-tabs {
     display: flex;
     justify-content: space-around;
-    padding: 12px;
+    padding-top: 0.7rem;
     background: var(--tg-theme-bg-color);
     border-bottom: 1px solid var(--tg-theme-hint-color);
     position: sticky;
     top: 0;
     z-index: 1000;
+    padding-bottom: 3.5rem;
 }
 
+.nav-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
 .nav-button {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 2.5rem;
+    height: 2.5rem;
     border: none;
     border-radius: 50%;
     background: transparent;
@@ -55,8 +61,9 @@ body {
     transition: all 0.2s ease;
 }
 
+
 .nav-button.active {
-    background: var(--tg-theme-button-color);
+    background: var(--tg-theme-button-color);;
 }
 
 .nav-dot {
@@ -66,14 +73,37 @@ body {
     background: var(--tg-theme-hint-color);
 }
 
+
 .nav-button.active .nav-dot {
     background: var(--tg-theme-button-text-color);
 }
+
+.block {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    height: 1rem;
+    background-color: white;
+    width: 100%;
+    z-index: 100;
+}
+
+.map_buttons {
+    position: absolute;
+    bottom: 2.5rem;
+    right: 1rem;
+    z-index: 100;
+}
+
 
 .view {
     display: none;
     flex: 1;
     position: relative;
+}
+
+.pb-5 {
+    padding-bottom: 1rem;
 }
 
 .view.active {
@@ -88,7 +118,6 @@ body {
 }
 
 .round-button {
-    position: absolute;
     width: 56px;
     height: 56px;
     border-radius: 50%;
@@ -133,19 +162,21 @@ body {
 }
 
 .camera-container {
+    height: calc(100vh / 1.5);
     position: relative;
-    flex: 1;
     background: #000;
     overflow: hidden;
 }
 
-#video, #sessionVideo {
+#video,
+#sessionVideo {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-#canvas, #sessionCanvas {
+#canvas,
+#sessionCanvas {
     display: none;
     width: 100%;
     height: 100%;
@@ -154,38 +185,45 @@ body {
 
 .camera-controls {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 120px;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent);
 }
 
 .capture-button {
-    width: 72px;
-    height: 72px;
+    width: 4.5rem;
+    height: 4.5rem;
     border-radius: 50%;
     background: transparent;
     border: 4px solid white;
     padding: 0;
     cursor: pointer;
-    display: flex;          /* Добавляем flex */
-    align-items: center;    /* Центрируем по вертикали */
-    justify-content: center; /* Центрируем по горизонтали */
-    position: relative;    
+    display: flex;
+    /* Добавляем flex */
+    align-items: center;
+    /* Центрируем по вертикали */
+    justify-content: center;
+    /* Центрируем по горизонтали */
+    position: relative;
     opacity: 0;
 }
 
 .capture-button-inner {
-    width: 56px;           /* 72px (кнопка) - 8px (обводка) - 8px (отступы) = 56px */
-    height: 56px;
+    width: 3.5rem;
+    height: 3.5rem;
     border-radius: 50%;
     background-color: white;
     display: block;
-    margin: 0;             /* Убираем возможные отступы */
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
 }
 
 .capture-button:hover {
@@ -197,7 +235,8 @@ body {
 }
 
 .capture-button:not(.hidden) {
-    opacity: 1; /* Видимость после разрешения камеры */
+    opacity: 1;
+    /* Видимость после разрешения камеры */
 }
 
 .capture-button:not(:disabled):hover {
@@ -214,10 +253,14 @@ body {
 }
 
 .error {
+    position: absolute;
+    bottom: 0;
+    right: 0;
     color: #ef4444;
     padding: 16px;
     text-align: center;
     display: none;
+    height: 4rem;
 }
 
 .hidden {
@@ -309,15 +352,14 @@ body {
 }
 
 .photo-slot-mini {
-    width: 48px;
-    height: 48px;
+    width: 4rem;
+    height: 4rem;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0,0,0,0.05);
+    background: rgba(0, 0, 0, 0.05);
     font-weight: bold;
-    font-size: 14px;
     overflow: hidden;
 }
 
@@ -363,7 +405,7 @@ body {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     transition: transform 0.2s ease;
 }
 
@@ -379,7 +421,8 @@ body {
 
 /* Синяя кнопка */
 .blue-button {
-    background-color: #3b82f6; /* tailwind blue-500 */
+    background-color: #3b82f6;
+    /* tailwind blue-500 */
     color: white;
 }
 
@@ -394,7 +437,7 @@ body {
 .spinner {
     width: 48px;
     height: 48px;
-    border: 4px solid rgba(0,0,0,0.1);
+    border: 4px solid rgba(0, 0, 0, 0.1);
     border-top: 4px solid var(--tg-theme-button-color);
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -409,10 +452,19 @@ body {
 
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.8); }
-    to { opacity: 1; transform: scale(1); }
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
