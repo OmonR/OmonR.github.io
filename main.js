@@ -299,7 +299,7 @@ const webapp = window.Telegram.WebApp;
  
  let recognizedOdometer = null;
  let lastOdometerPhoto = null;
- let lastRecognizedOdometerPhoto = null; // если ты будешь его генерировать
+ let lastRecognizedOdometerPhoto = null; 
  
  async function uploadOdometerPhoto(base64Photo, recognizedPhotoBase64, carId, odometerValue, initData) {
     try {
@@ -363,7 +363,7 @@ const webapp = window.Telegram.WebApp;
 
         if (res.ok && result.status === 'ok') {
             recognizedOdometer = result.odometer;
-            lastRecognizedOdometerPhoto = null; // если когда-то будешь генерировать, тут проставить base64
+            lastRecognizedOdometerPhoto = result.recognized_photo; // если когда-то будешь генерировать, тут проставить base64
 
             showCheckmark();
             setTimeout(() => {
