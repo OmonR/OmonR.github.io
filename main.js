@@ -144,7 +144,7 @@ const webapp = window.Telegram.WebApp;
     initApp();
     switchView('map');
 }
-switchView('map');
+//switchView('map');
  function createDraggableMarker(latlng) {
      if (currentMarker) {
          map.removeLayer(currentMarker);
