@@ -61,19 +61,19 @@ body {
     transition: all 0.2s ease;
 }
 
-/* var(--tg-theme-button-color); */
+
 .nav-button.active {
-    background: red;
+    background: var(--tg-theme-button-color);;
 }
 
 .nav-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: black;
+    background: var(--tg-theme-hint-color);
 }
 
-/* var(--tg-theme-hint-color) */
+
 .nav-button.active .nav-dot {
     background: var(--tg-theme-button-text-color);
 }
@@ -95,7 +95,7 @@ body {
     z-index: 100;
 }
 
-/* var(--tg-theme-bg-color) */
+
 .view {
     display: none;
     flex: 1;

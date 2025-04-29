@@ -78,28 +78,28 @@ const webapp = window.Telegram.WebApp;
      errorMessage.style.display = 'block';
  }
  
-//  function switchView(view) {
-//      hideSpinner();
-//      navButtons.forEach(btn => {
-//          btn.classList.toggle('active', btn.dataset.view === view);
-//      });
-//      views.forEach(v => {
-//          v.classList.toggle('active', v.id === `${view}View`);
-//      });
+ function switchView(view) {
+     hideSpinner();
+     navButtons.forEach(btn => {
+         btn.classList.toggle('active', btn.dataset.view === view);
+     });
+     views.forEach(v => {
+         v.classList.toggle('active', v.id === `${view}View`);
+     });
  
-//      // Всегда показываем nav-button при переключении вкладок
-//      document.querySelector('.nav-tabs').classList.remove('hidden');
+     // Всегда показываем nav-button при переключении вкладок
+     document.querySelector('.nav-tabs').classList.remove('hidden');
  
-//      if (view === 'camera' || view === 'session') {
-//          startCamera(view);
-//      } else {
-//          stopCamera();
-//      }
+     if (view === 'camera' || view === 'session') {
+         startCamera(view);
+     } else {
+         stopCamera();
+     }
  
-//      if (view === 'session') {
-//          updateSessionUI();
-//      }
-//  }
+     if (view === 'session') {
+         updateSessionUI();
+     }
+ }
 
  function switchView(view) {
     hideSpinner();
@@ -138,12 +138,12 @@ const webapp = window.Telegram.WebApp;
     }
 }
 
-//  if (!initData) {
-//     showForbiddenError();
-// } else {
-//     initApp();
-//     switchView('map');
-// }
+ if (!initData) {
+    showForbiddenError();
+} else {
+    initApp();
+    switchView('map');
+}
 switchView('map');
  function createDraggableMarker(latlng) {
      if (currentMarker) {
