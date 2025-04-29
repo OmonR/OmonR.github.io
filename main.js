@@ -298,7 +298,9 @@ const webapp = window.Telegram.WebApp;
  
  
  let recognizedOdometer = null;
-
+ let lastOdometerPhoto = null;
+ let lastRecognizedOdometerPhoto = null; // если ты будешь его генерировать
+ 
  async function uploadOdometerPhoto(base64Photo, recognizedPhotoBase64, carId, odometerValue, initData) {
     try {
       const response = await fetch("https://autopark-gthost.amvera.io/api/odometer", {
@@ -337,6 +339,7 @@ const webapp = window.Telegram.WebApp;
         }
 
         const base64image = canvas.toDataURL('image/jpeg');
+        lastOdometerPhoto = base64image; // 💾 сохраняем оригинал для /api/report
 
         const payload = {
             car_id: Number(carId),
@@ -347,7 +350,6 @@ const webapp = window.Telegram.WebApp;
             odometer_value: null
         };
 
-
         const res = await fetch('https://autopark-gthost.amvera.io/api/odometer', {
             method: 'POST',
             headers: {
@@ -357,11 +359,11 @@ const webapp = window.Telegram.WebApp;
             body: JSON.stringify(payload),
         });
 
-
         const result = await res.json();
 
         if (res.ok && result.status === 'ok') {
             recognizedOdometer = result.odometer;
+            lastRecognizedOdometerPhoto = null; // если когда-то будешь генерировать, тут проставить base64
 
             showCheckmark();
             setTimeout(() => {
@@ -375,6 +377,7 @@ const webapp = window.Telegram.WebApp;
         hideSpinner();
     }
 }
+
 
  async function notifyServer(eventPayload) {
      const body = { chat_id: chatId, message_id: msgId, event: eventPayload, init_data: initData};
@@ -395,69 +398,71 @@ const webapp = window.Telegram.WebApp;
      setTimeout(() => webapp.close(), 500);
    }
  
- async function sendSessionData() {
-     if (!initData) {
-         showError('❌ Не удалось получить данные Telegram.');
-         return;
-     }
- 
-     const marker = currentMarker?.getLatLng?.();
-     if (!marker) {
-         showError('❌ Координаты не выбраны.');
-         return;
-     }
- 
-     const odo = Number(odometer.value);
-     if (isNaN(odo) || odo < 0) {
-         showError('❌ Пожалуйста, укажите корректный пробег.');
-         return;
-     }
- 
-     if (sessionPhotos.length !== REQUIRED_PHOTOS) {
-         showError('❌ Необходимо 4 фото.');
-         return;
-     }
- 
-     const payload = {
-         car_id: Number(carId),
-         action,
-         latitude: marker.lat,
-         longitude: marker.lng,
-         odometer: recognizedOdometer,
-         photos: sessionPhotos,
-         init_data: initData 
-     };
-     
-     try {
-         const res = await fetch('https://autopark-gthost.amvera.io/api/report', {
-             method: 'POST',
-             headers: {
-                 'Content-Type': 'application/json',
-                 'Authorization': `tma ${initData}`
-             },
-             body: JSON.stringify(payload)
-         });
-         const result = await res.json();
- 
-         if (res.ok && result.status === 'ok') {
-             // ← здесь уведомляем ваш сервер о событии
-             await notifyServer({
-                 event: action,        // будет либо "start", либо "end"
-                 car_id: Number(carId)
-               });
- 
-             // Показываем уведомление в WebApp
-             showNotification(result.message || '✅ ОК');        
- 
-         } else {
-             const msg = result.detail || '❌ Ошибка при отправке';
-             showError(msg);
-         }
-     } catch (e) {
-         console.error(e);
-         showError('⚠️ Ошибка соединения с сервером');
-     }
- }
+   async function sendSessionData() {
+    if (!initData) {
+        showError('❌ Не удалось получить данные Telegram.');
+        return;
+    }
+
+    const marker = currentMarker?.getLatLng?.();
+    if (!marker) {
+        showError('❌ Координаты не выбраны.');
+        return;
+    }
+
+    const odo = Number(odometer.value);
+    if (isNaN(odo) || odo < 0) {
+        showError('❌ Пожалуйста, укажите корректный пробег.');
+        return;
+    }
+
+    if (sessionPhotos.length !== REQUIRED_PHOTOS) {
+        showError('❌ Необходимо 4 фото.');
+        return;
+    }
+
+    const finalOdometer = recognizedOdometer !== null && recognizedOdometer !== undefined ? recognizedOdometer : odo;
+
+    const payload = {
+        car_id: Number(carId),
+        action,
+        latitude: marker.lat,
+        longitude: marker.lng,
+        odometer: finalOdometer,
+        photos: sessionPhotos,
+        odometer_photo: lastOdometerPhoto,
+        recognized_odometer_photo: lastRecognizedOdometerPhoto,
+        init_data: initData 
+    };
+
+    try {
+        const res = await fetch('https://autopark-gthost.amvera.io/api/report', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `tma ${initData}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await res.json();
+
+        if (res.ok && result.status === 'ok') {
+            await notifyServer({
+                event: action,
+                car_id: Number(carId)
+            });
+
+            showNotification(result.message || '✅ ОК');
+        } else {
+            const msg = result.detail || '❌ Ошибка при отправке';
+            showError(msg);
+        }
+    } catch (e) {
+        console.error(e);
+        showError('⚠️ Ошибка соединения с сервером');
+    }
+}
  
  function showForbiddenError() {
      document.querySelector('.container').classList.add('hidden');
