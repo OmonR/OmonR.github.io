@@ -330,20 +330,40 @@ const webapp = window.Telegram.WebApp;
   async function handleSubmitPhoto() {
     showSpinner();
 
-    const base64image = canvas.toDataURL('image/jpeg');
-    const recognizedBase64 = recognizedCanvas?.toDataURL('image/jpeg'); // если есть
-
-    const payload = {
-        car_id: Number(carId),
-        photo: base64image,
-        recognized_photo: recognizedBase64 || null,
-        odometer_value: null
-    };
-
-    alert("Размер фото: " + (base64image.length / 1024).toFixed(2) + " KB");
-
     try {
-        const response = await fetch('https://autopark-gthost.amvera.io/api/odometer', {
+        alert("[DEBUG] Проверяем canvas размеры...");
+        if (canvas.width === 0 || canvas.height === 0) {
+            alert("[ERROR] canvas пустой (width или height равен 0)");
+            hideSpinner();
+            return;
+        }
+
+        const base64image = canvas.toDataURL('image/jpeg');
+        alert("[DEBUG] base64image создан. Длина: " + base64image.length);
+
+        let recognizedBase64 = null;
+        if (recognizedCanvas) {
+            alert("[DEBUG] Проверяем recognizedCanvas размеры...");
+            if (recognizedCanvas.width === 0 || recognizedCanvas.height === 0) {
+                alert("[WARNING] recognizedCanvas пустой. Пропускаем его.");
+            } else {
+                recognizedBase64 = recognizedCanvas.toDataURL('image/jpeg');
+                alert("[DEBUG] recognizedBase64 создан. Длина: " + recognizedBase64.length);
+            }
+        } else {
+            alert("[WARNING] recognizedCanvas не найден. Пропускаем его.");
+        }
+
+        const payload = {
+            car_id: Number(carId),
+            photo: base64image,
+            recognized_photo: recognizedBase64 || null,
+            odometer_value: null
+        };
+
+        alert("[DEBUG] Payload сформирован. Отправляем запрос...");
+
+        const res = await fetch('https://autopark-gthost.amvera.io/api/odometer', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -352,36 +372,24 @@ const webapp = window.Telegram.WebApp;
             body: JSON.stringify(payload),
         });
 
-        alert("Запрос отправлен\nHTTP статус: " + response.status);
+        alert("[DEBUG] Ответ сервера. Статус: " + res.status);
 
-        const result = await response.json();
-        alert("Ответ получен\n" + JSON.stringify(result));
+        const result = await res.json();
+        alert("[DEBUG] Ответ сервера: " + JSON.stringify(result));
 
-        if (response.ok && result.status === 'ok') {
-            const odo = result.odometer;
-
-            if (odo === "None" || odo === null) {
-                hideSpinner();
-                switchView('camera');
-                return;
-            }
-
-            recognizedOdometer = odo;
+        if (res.ok && result.status === 'ok') {
+            recognizedOdometer = result.odometer;
 
             showCheckmark();
             setTimeout(() => {
                 switchView('session');
             }, 1000);
-
-        } else if (result.status === 'processing') {
-            hideSpinner();
         } else {
             hideSpinner();
         }
-
     } catch (err) {
-        alert("[ERROR] Ошибка при отправке запроса\n" + (err.message || "Unknown error"));
-        showError(err.message || 'Ошибка соединения');
+        alert("[ERROR] Ошибка в handleSubmitPhoto: " + (err.message || err));
+        console.error(err);
         hideSpinner();
     }
 }
