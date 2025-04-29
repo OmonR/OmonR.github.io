@@ -37,23 +37,35 @@ body {
     padding-top: 0.7rem;
     background: var(--tg-theme-bg-color);
     border-bottom: 1px solid var(--tg-theme-hint-color);
-    position: sticky;
-    top: 0;
+    position: relative;
     z-index: 1000;
     padding-bottom: 3.5rem;
 }
 
+/* background: gray; */
+/* background: var(--tg-theme-hint-color); */
 .nav-button:disabled {
+    background: var(--tg-theme-hint-color);
     opacity: 0.4;
     cursor: not-allowed;
     pointer-events: none;
 }
+
+.line {
+    top: 50%;
+    transform: translateY(-50%);
+    position: absolute;
+    background: var(--tg-theme-hint-color);
+    height: 0.1rem;
+    width: 70%;
+}
+
 .nav-button {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2rem;
+    height: 2rem;
     border: none;
     border-radius: 50%;
     background: transparent;
@@ -61,9 +73,14 @@ body {
     transition: all 0.2s ease;
 }
 
-
+/* background: var(--tg-theme-button-color); */
 .nav-button.active {
-    background: var(--tg-theme-button-color);;
+    background: var(--tg-theme-button-color);
+}
+
+.nav-button img {
+    width: 1rem;
+    height: 1rem;
 }
 
 .nav-dot {
@@ -148,12 +165,13 @@ body {
 
 .location-button {
     bottom: 80px;
-    right: 16px;
+    right: 1rem;
 }
 
 .continue-button {
-    bottom: 16px;
-    right: 16px;
+    margin-top: 0.5rem;
+    bottom: 1rem;
+    right: 1rem;
 }
 
 .back-button {
@@ -188,10 +206,6 @@ body {
     bottom: 2rem;
     left: 50%;
     transform: translateX(-50%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent);
 }
 
 .capture-button {
@@ -210,6 +224,17 @@ body {
     /* Центрируем по горизонтали */
     position: relative;
     opacity: 0;
+}
+
+.continue-button {
+    -webkit-tap-highlight-color: transparent;
+    /* убирает темную вспышку при тапе */
+    box-shadow: none;
+    /* убирает любые тени */
+    outline: none;
+    /* убирает обводку при фокусе */
+    -webkit-appearance: none;
+    /* отключает стилизацию Safari */
 }
 
 .capture-button-inner {
@@ -389,11 +414,12 @@ body {
 
 .review-buttons {
     position: absolute;
-    bottom: 16px;
+    bottom: 2rem;
     width: 100%;
     display: flex;
     justify-content: space-between;
-    padding: 0 16px;
+    padding: 1rem;
+    align-items: center;
 }
 
 .circle-button {
@@ -415,8 +441,13 @@ body {
 
 /* Белая кнопка с обводкой */
 .white-button {
-    background-color: transparent;
-    border: 2px solid white;
+    background-color: gray;
+
+}
+
+.white-button img {
+    width: 2rem;
+    height: 2rem;
 }
 
 /* Синяя кнопка */
