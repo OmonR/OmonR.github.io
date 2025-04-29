@@ -2,9 +2,6 @@ const webapp = window.Telegram.WebApp;
  webapp.ready();
  webapp.expand();
  
- alert("try1")
- 
- // Get signed initData string
  const initData = webapp.initData;
 
  // Set theme variables from Telegram theme params
@@ -431,8 +428,8 @@ const webapp = window.Telegram.WebApp;
         longitude: marker.lng,
         odometer: finalOdometer,
         photos: sessionPhotos,
-        odometer_photo: lastOdometerPhoto,
-        recognized_odometer_photo: lastOdometerPhoto,
+        // odometer_photo: lastOdometerPhoto,
+        // recognized_odometer_photo: lastOdometerPhoto,
         init_data: initData 
     };
 
