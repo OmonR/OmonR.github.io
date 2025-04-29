@@ -536,22 +536,28 @@ const webapp = window.Telegram.WebApp;
  
  // 6. Initialize Application
  function initApp() {
-    fetch('https://autopark-gthost.amvera.io/api/auth', {
+    fetch(`https://autopark-gthost.amvera.io/api/auth?car_id=${carId}&action=${action}`, {
         method: 'POST',
         headers: {
-            'Authorization': `tma ${initData}`  // Fixed: Added backticks (`) for template literal
+            'Authorization': `tma ${initData}`
         }
     })
     .then(res => {
-        if (res.status === 409 || res.status === 410) {
-            alert('Эта сессия устарела');
+        if (res.status === 403) {
+            alert('⛔ У вас уже есть активная сессия. Завершите её прежде, чем начинать новую.');
             setTimeout(() => webapp.close(), 2000);
             return;
         }
-        return res.json();  // Moved inside .then() to properly handle response
+        return res.json();
+    })
+    .then(data => {
+        if (data?.status === 'ok') {
+            switchView('map');  // продолжить только если всё ок
+        }
     })
     .catch(err => {
         console.error('Auth failed', err);
+        alert('Ошибка авторизации.');
+        setTimeout(() => webapp.close(), 2000);
     });
 }
- 
