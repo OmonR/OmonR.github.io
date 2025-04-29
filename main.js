@@ -327,7 +327,7 @@ const webapp = window.Telegram.WebApp;
   }  
  
 
-async function handleSubmitPhoto() {
+  async function handleSubmitPhoto() {
     showSpinner();
 
     try {
@@ -345,8 +345,11 @@ async function handleSubmitPhoto() {
             car_id: Number(carId),
             photo: base64image,
             recognized_photo: null,
+            action: action,
+            init_data: initData,
             odometer_value: null
         };
+
 
         alert("[DEBUG] Payload сформирован. Отправляем запрос...");
 
