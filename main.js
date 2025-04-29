@@ -1,9 +1,7 @@
 const webapp = window.Telegram.WebApp;
  webapp.ready();
  webapp.expand();
- 
- alert("try")
- 
+  
  // Get signed initData string
  const initData = webapp.initData;
 
