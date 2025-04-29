@@ -40,10 +40,8 @@ const webapp = window.Telegram.WebApp;
  const urlParams = new URLSearchParams(window.location.search);
  const chatId = urlParams.get('chat_id');
  const msgId  = urlParams.get('msg_id');
- const carId  = urlParams.get('car_id');
- 
+ const carId  = urlParams.get('car_id'); 
  const action = urlParams.get('action') || 'start';
- 
  let currentMarker = null;
  let stream = null;
  let photoTaken = false;
@@ -103,13 +101,13 @@ const webapp = window.Telegram.WebApp;
      }
  }
 
- if (!initData) {
-    showForbiddenError();
-} else {
-    initApp();
-    switchView('map');
-}
- 
+//  if (!initData) {
+//     showForbiddenError();
+// } else {
+//     initApp();
+//     switchView('map');
+// }
+switchView('map');
  function createDraggableMarker(latlng) {
      if (currentMarker) {
          map.removeLayer(currentMarker);
@@ -533,24 +531,24 @@ async function handleSubmitPhoto() {
      if (odometer.value) switchView('session');
  });
  
- // 6. Initialize Application
- function initApp() {
-    fetch('https://autopark-gthost.amvera.io/api/auth', {
-        method: 'POST',
-        headers: {
-            'Authorization': `tma ${initData}`  // Fixed: Added backticks (`) for template literal
-        }
-    })
-    .then(res => {
-        if (res.status === 409 || res.status === 410) {
-            alert('Эта сессия устарела');
-            setTimeout(() => webapp.close(), 2000);
-            return;
-        }
-        return res.json();  // Moved inside .then() to properly handle response
-    })
-    .catch(err => {
-        console.error('Auth failed', err);
-    });
-}
+//  // 6. Initialize Application
+//  function initApp() {
+//     fetch('https://autopark-gthost.amvera.io/api/auth', {
+//         method: 'POST',
+//         headers: {
+//             'Authorization': `tma ${initData}`  // Fixed: Added backticks (`) for template literal
+//         }
+//     })
+//     .then(res => {
+//         if (res.status === 409 || res.status === 410) {
+//             alert('Эта сессия устарела');
+//             setTimeout(() => webapp.close(), 2000);
+//             return;
+//         }
+//         return res.json();  // Moved inside .then() to properly handle response
+//     })
+//     .catch(err => {
+//         console.error('Auth failed', err);
+//     });
+// }
  
