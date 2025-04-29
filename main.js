@@ -2,7 +2,8 @@ const webapp = window.Telegram.WebApp;
  webapp.ready();
  webapp.expand();
  
- alert("TRY")
+ alert("try")
+ 
  // Get signed initData string
  const initData = webapp.initData;
 
@@ -40,8 +41,10 @@ const webapp = window.Telegram.WebApp;
  const urlParams = new URLSearchParams(window.location.search);
  const chatId = urlParams.get('chat_id');
  const msgId  = urlParams.get('msg_id');
- const carId  = urlParams.get('car_id'); 
+ const carId  = urlParams.get('car_id');
+ 
  const action = urlParams.get('action') || 'start';
+ 
  let currentMarker = null;
  let stream = null;
  let photoTaken = false;
@@ -78,43 +81,28 @@ const webapp = window.Telegram.WebApp;
      errorMessage.style.display = 'block';
  }
  
-
  function switchView(view) {
-    hideSpinner();
-
-    // Перебираем кнопки навигации
-    navButtons.forEach(btn => {
-        const isActive = btn.dataset.view === view;
-
-        // Добавляем или удаляем класс 'active' в зависимости от текущего представления
-        btn.classList.toggle('active', isActive);
-
-        // Если кнопка не активна, добавляем атрибут 'disabled', иначе удаляем его
-        if (isActive) {
-            btn.removeAttribute('disabled'); // Убираем disabled, если кнопка активна
-        } else {
-            btn.setAttribute('disabled', 'true'); // Добавляем disabled, если кнопка не активна
-        }
-    });
-
-    // Переключаем активные представления
-    views.forEach(v => {
-        v.classList.toggle('active', v.id === `${view}View`);
-    });
-
-    // Всегда показываем nav-button при переключении вкладок
-    document.querySelector('.nav-tabs').classList.remove('hidden');
-
-    if (view === 'camera' || view === 'session') {
-        startCamera(view);
-    } else {
-        stopCamera();
-    }
-
-    if (view === 'session') {
-        updateSessionUI();
-    }
-}
+     hideSpinner();
+     navButtons.forEach(btn => {
+         btn.classList.toggle('active', btn.dataset.view === view);
+     });
+     views.forEach(v => {
+         v.classList.toggle('active', v.id === `${view}View`);
+     });
+ 
+     // Всегда показываем nav-button при переключении вкладок
+     document.querySelector('.nav-tabs').classList.remove('hidden');
+ 
+     if (view === 'camera' || view === 'session') {
+         startCamera(view);
+     } else {
+         stopCamera();
+     }
+ 
+     if (view === 'session') {
+         updateSessionUI();
+     }
+ }
 
  if (!initData) {
     showForbiddenError();
@@ -122,7 +110,7 @@ const webapp = window.Telegram.WebApp;
     initApp();
     switchView('map');
 }
-//switchView('map');
+ 
  function createDraggableMarker(latlng) {
      if (currentMarker) {
          map.removeLayer(currentMarker);
@@ -311,7 +299,9 @@ const webapp = window.Telegram.WebApp;
  
  
  let recognizedOdometer = null;
-
+ let lastOdometerPhoto = null;
+ let lastRecognizedOdometerPhoto = null; 
+ 
  async function uploadOdometerPhoto(base64Photo, recognizedPhotoBase64, carId, odometerValue, initData) {
     try {
       const response = await fetch("https://autopark-gthost.amvera.io/api/odometer", {
@@ -340,28 +330,26 @@ const webapp = window.Telegram.WebApp;
   }  
  
 
-async function handleSubmitPhoto() {
+  async function handleSubmitPhoto() {
     showSpinner();
 
     try {
-        alert("[DEBUG] Проверяем canvas размеры...");
         if (canvas.width === 0 || canvas.height === 0) {
-            alert("[ERROR] canvas пустой (width или height равен 0)");
             hideSpinner();
             return;
         }
 
         const base64image = canvas.toDataURL('image/jpeg');
-        alert("[DEBUG] base64image создан. Длина: " + base64image.length);
+        lastOdometerPhoto = base64image; // 💾 сохраняем оригинал для /api/report
 
         const payload = {
             car_id: Number(carId),
             photo: base64image,
             recognized_photo: null,
+            action: action,
+            init_data: initData,
             odometer_value: null
         };
-
-        alert("[DEBUG] Payload сформирован. Отправляем запрос...");
 
         const res = await fetch('https://autopark-gthost.amvera.io/api/odometer', {
             method: 'POST',
@@ -372,13 +360,11 @@ async function handleSubmitPhoto() {
             body: JSON.stringify(payload),
         });
 
-        alert("[DEBUG] Ответ сервера. Статус: " + res.status);
-
         const result = await res.json();
-        alert("[DEBUG] Ответ сервера: " + JSON.stringify(result));
 
         if (res.ok && result.status === 'ok') {
             recognizedOdometer = result.odometer;
+            lastRecognizedOdometerPhoto = result.recognized_photo;
 
             showCheckmark();
             setTimeout(() => {
@@ -388,11 +374,11 @@ async function handleSubmitPhoto() {
             hideSpinner();
         }
     } catch (err) {
-        alert("[ERROR] Ошибка в handleSubmitPhoto: " + (err.message || err));
         console.error(err);
         hideSpinner();
     }
 }
+
 
  async function notifyServer(eventPayload) {
      const body = { chat_id: chatId, message_id: msgId, event: eventPayload, init_data: initData};
@@ -413,69 +399,71 @@ async function handleSubmitPhoto() {
      setTimeout(() => webapp.close(), 500);
    }
  
- async function sendSessionData() {
-     if (!initData) {
-         showError('❌ Не удалось получить данные Telegram.');
-         return;
-     }
- 
-     const marker = currentMarker?.getLatLng?.();
-     if (!marker) {
-         showError('❌ Координаты не выбраны.');
-         return;
-     }
- 
-     const odo = Number(odometer.value);
-     if (isNaN(odo) || odo < 0) {
-         showError('❌ Пожалуйста, укажите корректный пробег.');
-         return;
-     }
- 
-     if (sessionPhotos.length !== REQUIRED_PHOTOS) {
-         showError('❌ Необходимо 4 фото.');
-         return;
-     }
- 
-     const payload = {
-         car_id: Number(carId),
-         action,
-         latitude: marker.lat,
-         longitude: marker.lng,
-         odometer: recognizedOdometer,
-         photos: sessionPhotos,
-         init_data: initData 
-     };
-     
-     try {
-         const res = await fetch('https://autopark-gthost.amvera.io/api/report', {
-             method: 'POST',
-             headers: {
-                 'Content-Type': 'application/json',
-                 'Authorization': `tma ${initData}`
-             },
-             body: JSON.stringify(payload)
-         });
-         const result = await res.json();
- 
-         if (res.ok && result.status === 'ok') {
-             // ← здесь уведомляем ваш сервер о событии
-             await notifyServer({
-                 event: action,        // будет либо "start", либо "end"
-                 car_id: Number(carId)
-               });
- 
-             // Показываем уведомление в WebApp
-             showNotification(result.message || '✅ ОК');        
- 
-         } else {
-             const msg = result.detail || '❌ Ошибка при отправке';
-             showError(msg);
-         }
-     } catch (e) {
-         console.error(e);
-         showError('⚠️ Ошибка соединения с сервером');
-     }
- }
+   async function sendSessionData() {
+    if (!initData) {
+        showError('❌ Не удалось получить данные Telegram.');
+        return;
+    }
+
+    const marker = currentMarker?.getLatLng?.();
+    if (!marker) {
+        showError('❌ Координаты не выбраны.');
+        return;
+    }
+
+    const odo = Number(odometer.value);
+    if (isNaN(odo) || odo < 0) {
+        showError('❌ Пожалуйста, укажите корректный пробег.');
+        return;
+    }
+
+    if (sessionPhotos.length !== REQUIRED_PHOTOS) {
+        showError('❌ Необходимо 4 фото.');
+        return;
+    }
+
+    const finalOdometer = recognizedOdometer !== null && recognizedOdometer !== undefined ? recognizedOdometer : odo;
+
+    const payload = {
+        car_id: Number(carId),
+        action,
+        latitude: marker.lat,
+        longitude: marker.lng,
+        odometer: finalOdometer,
+        photos: sessionPhotos,
+        odometer_photo: lastOdometerPhoto,
+        recognized_odometer_photo: lastOdometerPhoto,
+        init_data: initData 
+    };
+
+    try {
+        const res = await fetch('https://autopark-gthost.amvera.io/api/report', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `tma ${initData}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await res.json();
+
+        if (res.ok && result.status === 'ok') {
+            await notifyServer({
+                event: action,
+                car_id: Number(carId)
+            });
+
+            showNotification(result.message || '✅ ОК');
+        } else {
+            const msg = result.detail || '❌ Ошибка при отправке';
+            showError(msg);
+        }
+    } catch (e) {
+        console.error(e);
+        showError('⚠️ Ошибка соединения с сервером');
+    }
+}
  
  function showForbiddenError() {
      document.querySelector('.container').classList.add('hidden');
@@ -546,24 +534,24 @@ async function handleSubmitPhoto() {
      if (odometer.value) switchView('session');
  });
  
-//  // 6. Initialize Application
-//  function initApp() {
-//     fetch('https://autopark-gthost.amvera.io/api/auth', {
-//         method: 'POST',
-//         headers: {
-//             'Authorization': `tma ${initData}`  // Fixed: Added backticks (`) for template literal
-//         }
-//     })
-//     .then(res => {
-//         if (res.status === 409 || res.status === 410) {
-//             alert('Эта сессия устарела');
-//             setTimeout(() => webapp.close(), 2000);
-//             return;
-//         }
-//         return res.json();  // Moved inside .then() to properly handle response
-//     })
-//     .catch(err => {
-//         console.error('Auth failed', err);
-//     });
-// }
+ // 6. Initialize Application
+ function initApp() {
+    fetch('https://autopark-gthost.amvera.io/api/auth', {
+        method: 'POST',
+        headers: {
+            'Authorization': `tma ${initData}`  // Fixed: Added backticks (`) for template literal
+        }
+    })
+    .then(res => {
+        if (res.status === 409 || res.status === 410) {
+            alert('Эта сессия устарела');
+            setTimeout(() => webapp.close(), 2000);
+            return;
+        }
+        return res.json();  // Moved inside .then() to properly handle response
+    })
+    .catch(err => {
+        console.error('Auth failed', err);
+    });
+}
  
