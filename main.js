@@ -2,7 +2,7 @@ const webapp = window.Telegram.WebApp;
  webapp.ready();
  webapp.expand();
  
- alert("try")
+ alert("try1")
  
  // Get signed initData string
  const initData = webapp.initData;
@@ -432,11 +432,11 @@ const webapp = window.Telegram.WebApp;
         odometer: finalOdometer,
         photos: sessionPhotos,
         odometer_photo: lastOdometerPhoto,
-        recognized_odometer_photo: lastRecognizedOdometerPhoto,
+        recognized_odometer_photo: lastOdometerPhoto,
         init_data: initData 
     };
 
-    alert(lastRecognizedOdometerPhoto)
+    alert(lastOdometerPhoto)
 
     try {
         const res = await fetch('https://autopark-gthost.amvera.io/api/report', {
