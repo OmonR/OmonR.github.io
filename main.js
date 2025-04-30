@@ -372,6 +372,7 @@ const webapp = window.Telegram.WebApp;
             } else if (result.status === 'processing') {
                 alert("Не удалось распознать значение");
                 switchView('camera');
+                document.getElementById('reviewButtons').classList.add('hidden');
             }
         } else {
             console.error("Ошибка при запросе: ", result);
