@@ -110,9 +110,11 @@ body {
     position: absolute;
     bottom: 2.5rem;
     right: 1rem;
-    z-index: 100;
+    z-index: 1000; /* Increase z-index to ensure it's above other elements */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
-
 
 .view {
     display: none;
@@ -149,6 +151,14 @@ body {
     z-index: 100;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     transition: transform 0.2s ease, opacity 0.2s ease;
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+    touch-action: manipulation; /* Improve touch handling */
+    outline: none; /* Remove outline on focus for cleaner look */
+}
+
+/* Add focus state for better accessibility */
+.round-button:focus {
+    box-shadow: 0 0 0 3px rgba(36, 129, 204, 0.4), 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .round-button:hover {
@@ -165,8 +175,13 @@ body {
 }
 
 .location-button {
-    bottom: 80px;
-    right: 1rem;
+    position: relative; /* Add explicit position */
+    bottom: 0; /* Reset bottom position since it's inside map_buttons */
+    right: 0; /* Reset right position since it's inside map_buttons */
+    margin-bottom: 10px; /* Add margin instead of absolute positioning */
+    min-height: 56px; /* Ensure minimum touch target size */
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+    touch-action: manipulation; /* Improve touch handling */
 }
 
 .continue-button {

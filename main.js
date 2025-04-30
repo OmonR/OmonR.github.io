@@ -111,6 +111,46 @@ const webapp = window.Telegram.WebApp;
     initApp();
     switchView('map');
 }
+
+function setupLocationButton() {
+    const handleLocationRequest = () => {
+        if (!navigator.geolocation) {
+            showError('Geolocation is not supported by your browser.');
+            return;
+        }
+
+        // Add haptic feedback if available
+        if (window.Telegram?.WebApp?.HapticFeedback) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            ({ coords }) => {
+                createDraggableMarker([coords.latitude, coords.longitude]);
+                map.setView([coords.latitude, coords.longitude], 15);
+            },
+            (error) => {
+                console.error('Geolocation error:', error);
+                showError('Please enable location services to continue.');
+            },
+            { 
+                timeout: 10000, 
+                enableHighAccuracy: true 
+            }
+        );
+    };
+
+    // Remove existing listeners to prevent duplicates
+    locationButton.removeEventListener('click', handleLocationRequest);
+    
+    // Add both touch and click events for better device compatibility
+    locationButton.addEventListener('click', handleLocationRequest);
+    
+    // Add specific debug info to console
+    locationButton.addEventListener('touchstart', (e) => {
+        console.log('TouchStart detected on locationButton');
+    });
+}
  
  function createDraggableMarker(latlng) {
      if (currentMarker) {
@@ -553,7 +593,8 @@ const webapp = window.Telegram.WebApp;
     })
     .then(data => {
         if (data?.status === 'ok') {
-            switchView('map');  // продолжить только если всё ок
+            switchView('map');
+            setupLocationButton(); 
         }
     })
     .catch(err => {
