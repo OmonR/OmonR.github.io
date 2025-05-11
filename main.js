@@ -328,7 +328,7 @@ const webapp = window.Telegram.WebApp;
   }  
  
 
-  async function handleSubmitPhoto() {
+async function handleSubmitPhoto() {
     showSpinner();
 
     try {
@@ -340,22 +340,18 @@ const webapp = window.Telegram.WebApp;
         const base64image = canvas.toDataURL('image/jpeg');
         lastOdometerPhoto = base64image;
 
-        const payload = {
-            car_id: Number(carId),
-            photo: base64image,
-            recognized_photo: null,
-            action: action,
-            init_data: initData,
-            odometer_value: null
-        };
-
-        const res = await fetch('https://autopark-gthost.amvera.io/api/odometer', {
+        // Только распознаем одометр, не сохраняем в S3
+        const res = await fetch('https://autopark-gthost.amvera.io/api/odometer/recognize', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `tma ${initData}`
             },
-            body: JSON.stringify(payload),
+            body: JSON.stringify({
+                photo: base64image,
+                car_id: Number(carId),
+                action: action
+            }),
         });
 
         const result = await res.json();
@@ -363,8 +359,6 @@ const webapp = window.Telegram.WebApp;
         if (res.ok) {
             if (result.status === 'ok') {
                 recognizedOdometer = result.odometer;
-                lastRecognizedOdometerPhoto = result.recognized_photo;
-
                 showCheckmark();
                 setTimeout(() => {
                     switchView('session');
@@ -404,7 +398,7 @@ const webapp = window.Telegram.WebApp;
      setTimeout(() => webapp.close(), 100);
    }
  
-   async function sendSessionData() {
+async function sendSessionData() {
     if (!initData) {
         showError('❌ Не удалось получить данные Telegram.');
         return;
@@ -427,6 +421,11 @@ const webapp = window.Telegram.WebApp;
         return;
     }
 
+    if (!lastOdometerPhoto) {
+        showError('❌ Отсутствует фото одометра.');
+        return;
+    }
+
     const finalOdometer = recognizedOdometer !== null && recognizedOdometer !== undefined ? recognizedOdometer : odo;
 
     const payload = {
@@ -437,7 +436,6 @@ const webapp = window.Telegram.WebApp;
         odometer: finalOdometer,
         photos: sessionPhotos,
         odometer_photo: lastOdometerPhoto,
-        recognized_odometer_photo: lastOdometerPhoto,
         init_data: initData 
     };
 
