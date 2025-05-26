@@ -561,6 +561,7 @@ async function sendSessionData() {
     .catch(err => {
         console.error('Auth failed', err);
         alert('Ошибка авторизации.');
+        alert(err);
         setTimeout(() => webapp.close(), 2000);
     });
 }
