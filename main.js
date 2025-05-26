@@ -555,7 +555,7 @@ async function sendSessionData() {
     })
     .then(data => {
         if (data?.status === 'ok') {
-            switchView('map');  // продолжить только если всё ок
+            switchView('map'); 
         }
     })
     .catch(err => {
