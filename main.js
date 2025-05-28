@@ -118,25 +118,52 @@ const webapp = window.Telegram.WebApp;
  }
 
  // Pinch-to-zoom для видео
-function setupPinchToZoom(videoElement, stream) {
+function setupPinchAndScroll(videoElement, stream) {
     let initialDistance = null;
     let lastZoom = 1;
-    const [track] = stream.getVideoTracks();
-    const capabilities = track.getCapabilities();
-    if (!capabilities.zoom) return; // нет зума
+    let lastTranslate = { x: 0, y: 0 };
+    let startTranslate = { x: 0, y: 0 };
+    let lastTouchMid = null;
+    let isPanning = false;
+    let [track] = stream.getVideoTracks();
+    let capabilities = track.getCapabilities ? track.getCapabilities() : {};
+    if (!capabilities.zoom) {
+        alert('Zoom capability not supported');
+        return;
+    }
 
-    // Получаем текущее значение
     lastZoom = track.getSettings().zoom || capabilities.zoom.min;
 
+    // Сбрасываем трансформацию
+    videoElement.style.transform = '';
+    videoElement.style.transition = 'transform 0.1s';
+
+    // Touch start: инициализация pinch и scroll
     videoElement.addEventListener('touchstart', function (e) {
         if (e.touches.length === 2) {
             initialDistance = Math.hypot(
                 e.touches[0].pageX - e.touches[1].pageX,
                 e.touches[0].pageY - e.touches[1].pageY
             );
+            lastTouchMid = {
+                x: (e.touches[0].pageX + e.touches[1].pageX) / 2,
+                y: (e.touches[0].pageY + e.touches[1].pageY) / 2
+            };
+            startTranslate = { ...lastTranslate };
+            alert('pinch: инициализация жеста');
+        }
+        if (e.touches.length === 1) {
+            isPanning = true;
+            lastTouchMid = {
+                x: e.touches[0].pageX,
+                y: e.touches[0].pageY
+            };
+            startTranslate = { ...lastTranslate };
+            alert('pan: инициализация drag');
         }
     });
 
+    // Touch move: зум pinch и drag по экрану
     videoElement.addEventListener('touchmove', function (e) {
         if (e.touches.length === 2 && initialDistance) {
             const newDistance = Math.hypot(
@@ -145,22 +172,46 @@ function setupPinchToZoom(videoElement, stream) {
             );
             const delta = newDistance - initialDistance;
 
-            // Простая формула для изменения зума
-            let zoomStep = (capabilities.zoom.max - capabilities.zoom.min) / 10;
+            let zoomStep = (capabilities.zoom.max - capabilities.zoom.min) / 20;
             if (!zoomStep) zoomStep = 0.1;
 
             let newZoom = lastZoom + (delta > 0 ? zoomStep : -zoomStep);
             newZoom = Math.max(capabilities.zoom.min, Math.min(newZoom, capabilities.zoom.max));
-
             track.applyConstraints({ advanced: [{ zoom: newZoom }] });
+            alert('zoom: ' + newZoom);
+
+            // Параллельно скроллим (двигаем камеру)
+            const newMid = {
+                x: (e.touches[0].pageX + e.touches[1].pageX) / 2,
+                y: (e.touches[0].pageY + e.touches[1].pageY) / 2
+            };
+            const dx = newMid.x - lastTouchMid.x;
+            const dy = newMid.y - lastTouchMid.y;
+
+            lastTranslate.x = startTranslate.x + dx;
+            lastTranslate.y = startTranslate.y + dy;
+            videoElement.style.transform = `translate(${lastTranslate.x}px, ${lastTranslate.y}px) scale(1)`;
+            alert('scroll: ' + lastTranslate.x + ', ' + lastTranslate.y);
+        }
+        if (e.touches.length === 1 && isPanning) {
+            const dx = e.touches[0].pageX - lastTouchMid.x;
+            const dy = e.touches[0].pageY - lastTouchMid.y;
+            lastTranslate.x = startTranslate.x + dx;
+            lastTranslate.y = startTranslate.y + dy;
+            videoElement.style.transform = `translate(${lastTranslate.x}px, ${lastTranslate.y}px) scale(1)`;
+            alert('scroll one finger: ' + lastTranslate.x + ', ' + lastTranslate.y);
         }
     });
 
     videoElement.addEventListener('touchend', function (e) {
         if (e.touches.length < 2) {
-            // Сохраняем последний зум
+            // Запоминаем последний зум
             lastZoom = track.getSettings().zoom || lastZoom;
             initialDistance = null;
+            alert('конец pinch/scroll');
+        }
+        if (e.touches.length === 0) {
+            isPanning = false;
         }
     });
 }
@@ -174,7 +225,7 @@ async function startCamera(view) {
     // Если поток уже есть, просто переназначаем его, без новых разрешений
     if (stream) {
         videoElement.srcObject = stream;
-        setupPinchToZoom(videoElement, stream);
+        setupPinchAndScroll(videoElement, stream);
         await videoElement.play();
         // Ждём готовности картинки
         await new Promise(resolve => {
