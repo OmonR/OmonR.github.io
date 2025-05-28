@@ -178,19 +178,19 @@ const webapp = window.Telegram.WebApp;
      odometer.value = '';
  }
  
- function capturePhoto(video, canvas) {
+ async function capturePhoto(video, canvas) {
+    if (video.readyState !== 4) {
+        // Ждем до 500мс, пока видео полностью не готово
+        await new Promise(res => setTimeout(res, 300));
+        if (video.readyState !== 4) {
+            alert('Камера ещё не готова, попробуйте снова.');
+            return null;
+        }
+    }
     const ctx = canvas.getContext('2d');
-    const width = video.videoWidth;
-    const height = video.videoHeight;
-
-    // Устанавливаем размеры canvas как у видеопотока
-    canvas.width = width;
-    canvas.height = height;
-
-    // Просто рисуем весь кадр без кропа
-    ctx.drawImage(video, 0, 0, width, height);
-
-    // Возвращаем base64-изображение
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
     return canvas.toDataURL('image/jpeg');
 }
  
