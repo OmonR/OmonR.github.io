@@ -79,6 +79,29 @@ const webapp = window.Telegram.WebApp;
      errorMessage.style.display = 'block';
  }
  
+ async function switchViewAsync(view) {
+    hideSpinner();
+    navButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === view);
+    });
+    views.forEach(v => {
+        v.classList.toggle('active', v.id === `${view}View`);
+    });
+
+    document.querySelector('.nav-tabs').classList.remove('hidden');
+
+    if (view === 'camera' || view === 'session') {
+        await startCamera(view);
+    } else {
+        stopCamera();
+    }
+
+    if (view === 'session') {
+        updateSessionUI();
+    }
+}
+
+
  function switchView(view) {
      hideSpinner();
      navButtons.forEach(btn => {
@@ -550,7 +573,11 @@ async function sendSessionData() {
      }
  });
  
- continueButton.addEventListener('click', () => switchView('camera'));
+ continueButton.addEventListener('click', async () => {
+    continueButton.disabled = true;
+    await switchViewAsync('camera');
+    continueButton.disabled = false;
+});
  backButton.addEventListener('click', () => startCamera('camera'));
  
  odometer.addEventListener('input', () => {
