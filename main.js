@@ -123,77 +123,85 @@ let isTorchOn = false;
      continueButton.classList.remove('hidden');
  }
  
- async function startCamera(view) {
-     const videoElement = view === 'session' ? sessionVideo : video;
-     const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
-     const canvasEl = view === 'session' ? sessionCanvas : canvas;
-     videoTrack = stream.getVideoTracks()[0];
+async function startCamera(view) {
+    // Останавливаем старый поток, если есть
+    if (stream) stopCamera();
 
-    // Зум
-    if (videoTrack && videoTrack.getCapabilities().zoom) {
-        zoomSlider.min = videoTrack.getCapabilities().zoom.min || 1;
-        zoomSlider.max = videoTrack.getCapabilities().zoom.max || 4;
-        zoomSlider.step = videoTrack.getCapabilities().zoom.step || 0.1;
-        zoomSlider.value = videoTrack.getSettings().zoom || 1;
-        currentZoom = zoomSlider.value;
-        zoomSlider.style.display = '';
-        zoomValue.style.display = '';
-    } else {
-        zoomSlider.style.display = 'none';
-        zoomValue.style.display = 'none';
-    }
-    // Torch (фонарик)
-    if (videoTrack && videoTrack.getCapabilities().torch) {
-        flashButton.style.display = '';
-    } else {
-        flashButton.style.display = 'none';
-    }
+    // Выбираем нужные элементы в зависимости от view
+    const videoElement = view === 'session' ? sessionVideo : video;
+    const canvasEl = view === 'session' ? sessionCanvas : canvas;
+    const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
 
-     if (stream) stopCamera(); // 💡 предотвращаем повторный вызов
- 
-     if (photoTaken) resetCameraView(); // 💡 возможно, сделать reset по view
- 
-     try {
-         stream = await navigator.mediaDevices.getUserMedia({
-             video: { facingMode: 'environment' }
-         });
-         videoElement.srcObject = stream;
- 
-         await videoElement.play().catch(err => {
-             console.warn('Auto-play error:', err);
-         });
- 
-         if (view === 'camera') {
-             captureButton.classList.remove('hidden');
-             captureButton.style.opacity = '1';
-             captureButton.style.display = '';
-             captureButton.disabled = false;
-         }
- 
-         if (view === 'session') {
-             sessionCaptureButton.disabled = false;
-             sessionCaptureButton.classList.remove('hidden');
-             sessionCaptureButton.style.opacity = '1';
-             sessionCaptureButton.style.display = 'block';
-         }
- 
-         videoElement.style.display = 'block';
-         canvasEl.style.display = 'none';
-     } catch (err) {
-         console.error('Camera error:', err);
-         showError('Не удалось получить доступ к камере. Разрешите доступ и попробуйте снова.');
-         captureBtn.disabled = true;
-     }
- }
- 
- function stopCamera() {
-     if (stream) {
-         stream.getTracks().forEach(track => track.stop());
-         stream = null;
-     }
-     [video, sessionVideo].forEach(v => v.srcObject = null);
-     [captureButton, sessionCaptureButton].forEach(btn => btn.disabled = true);
- }
+    try {
+        // Запрашиваем доступ к камере
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        videoElement.srcObject = stream;
+
+        // Получаем трек для управления зумом и torch
+        videoTrack = stream.getVideoTracks()[0];
+        setupZoomAndTorch();
+
+        // Запускаем видео
+        await videoElement.play();
+
+        // Отображаем кнопку захвата
+        captureBtn.classList.remove('hidden');
+        captureBtn.disabled = false;
+    } catch (err) {
+        console.error('Camera error:', err);
+        showError('Не удалось получить доступ к камере.\nРазрешите доступ и попробуйте снова.');
+    }
+    }
+    
+function stopCamera() {
+  if (!stream) return;
+  stream.getTracks().forEach(track => track.stop());
+  stream = null;
+  videoTrack = null;
+}
+
+function setupZoomAndTorch() {
+  const capabilities = videoTrack.getCapabilities();
+
+  // Зум
+  if (capabilities.zoom) {
+    zoomSlider.min = capabilities.zoom.min;
+    zoomSlider.max = capabilities.zoom.max;
+    zoomSlider.step = capabilities.zoom.step;
+    zoomSlider.value = capabilities.zoom.min;
+    currentZoom = capabilities.zoom.min;
+    zoomValue.textContent = currentZoom + 'x';
+    zoomSlider.style.display = 'inline-block';
+    zoomValue.style.display = 'inline-block';
+
+    zoomSlider.oninput = async () => {
+      currentZoom = parseFloat(zoomSlider.value);
+      zoomValue.textContent = currentZoom + 'x';
+      try {
+        await videoTrack.applyConstraints({ advanced: [{ zoom: currentZoom }] });
+      } catch {}
+    };
+  } else {
+    zoomSlider.style.display = 'none';
+    zoomValue.style.display = 'none';
+  }
+
+  // Фонарик
+  if (capabilities.torch) {
+    flashButton.style.display = 'inline-block';
+    flashButton.onclick = async () => {
+      isTorchOn = !isTorchOn;
+      try {
+        await videoTrack.applyConstraints({ advanced: [{ torch: isTorchOn }] });
+        flashButton.style.background = isTorchOn ? '#ffd900' : '';
+      } catch {
+        alert('Фонарик не поддерживается этим устройством');
+      }
+    };
+  } else {
+    flashButton.style.display = 'none';
+  }
+}
  
  function resetCameraView() {
      photoTaken = false;
@@ -221,24 +229,29 @@ let isTorchOn = false;
     return canvas.toDataURL('image/jpeg');
 }
  
- function captureAndCropPhoto(video, canvas) {
-    const ctx = canvas.getContext('2d');
-    const width = video.videoWidth;
-    const height = video.videoHeight;
+    function captureAndCropPhoto(videoEl, canvasEl) {
+        const ctx = canvasEl.getContext('2d');
+        const w = videoEl.videoWidth;
+        const h = videoEl.videoHeight;
+        const zoom = currentZoom || 1;
 
-    // Кроп по центру в зависимости от зума
-    const zoom = parseFloat(currentZoom) || 1;
-    const cropWidth = width / zoom;
-    const cropHeight = height / zoom;
-    const cropX = (width - cropWidth) / 2;
-    const cropY = (height - cropHeight) / 2;
+        // Вычисляем область обрезки
+        const cropW = w / zoom;
+        const cropH = h / zoom;
+        const cropX = (w - cropW) / 2;
+        const cropY = (h - cropH) / 2;
 
-    canvas.width = cropWidth;
-    canvas.height = cropHeight;
-    ctx.drawImage(video, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+        canvasEl.width = cropW;
+        canvasEl.height = cropH;
+        ctx.drawImage(videoEl, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
 
-    return canvas.toDataURL('image/jpeg');
-}
+        return canvasEl.toDataURL('image/jpeg');
+        }
+
+        function showError(msg) {
+        // Ваша реализация вывода ошибки
+        console.warn(msg);
+        }
  
  
  function updateSessionUI() {
