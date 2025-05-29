@@ -78,28 +78,6 @@ const webapp = window.Telegram.WebApp;
      errorMessage.textContent = message;
      errorMessage.style.display = 'block';
  }
- 
- async function switchViewAsync(view) {
-    hideSpinner();
-    navButtons.forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.view === view);
-    });
-    views.forEach(v => {
-        v.classList.toggle('active', v.id === `${view}View`);
-    });
-
-    document.querySelector('.nav-tabs').classList.remove('hidden');
-
-    if (view === 'camera' || view === 'session') {
-        await startCamera(view);
-    } else {
-        stopCamera();
-    }
-
-    if (view === 'session') {
-        updateSessionUI();
-    }
-}
 
 
  function switchView(view) {
@@ -173,16 +151,13 @@ async function startCamera(view) {
     }
 
     try {
-        alert("🚀 Запрос доступа к камере...");
         stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: 'environment' }
         });
 
-        alert("✅ Доступ к камере получен. Настраиваем видео...");
         videoElement.srcObject = stream;
 
         await videoElement.play().catch(err => {
-            alert("⚠️ Ошибка запуска видео: " + err.message);
             console.warn('Auto-play error:', err);
         });
 
@@ -195,12 +170,9 @@ async function startCamera(view) {
         captureBtn.style.pointerEvents = 'auto';
         captureBtn.style.display = 'block';
 
-        alert("🎥 Камера успешно активирована.");
-
     } catch (err) {
-        alert("❌ Ошибка доступа к камере: " + err.message);
         console.error('Camera error:', err);
-        showError('Не удалось получить доступ к камере. Разрешите доступ и попробуйте снова.');
+        alert("Не удалось получить доступ к камере. Разрешите доступ и попробуйте снова.");
         captureBtn.disabled = true;
     }
 
@@ -573,11 +545,14 @@ async function sendSessionData() {
      }
  });
  
- continueButton.addEventListener('click', async () => {
+ continueButton.addEventListener('click', () => {
     continueButton.disabled = true;
-    await switchViewAsync('camera');
-    continueButton.disabled = false;
+    setTimeout(() => {
+        switchView('camera');
+        continueButton.disabled = false;
+    }, 100); // может быть и 200 мс
 });
+
  backButton.addEventListener('click', () => startCamera('camera'));
  
  odometer.addEventListener('input', () => {
