@@ -202,10 +202,12 @@ body {
 }
 
 .camera-controls {
-    position: absolute;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
+  position: absolute;
+  bottom: 3.5rem; /* чуть выше nav-tabs */
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 1rem;
 }
 
 .capture-button {
@@ -481,7 +483,7 @@ body {
     animation: fadeIn 0.3s ease-in-out;
 }
 
-/* Верхний блок управления камерой */
+/* Контейнер в верхней части камеры */
 .camera-top-controls {
   position: absolute;
   top: 0.5rem;
@@ -496,19 +498,20 @@ body {
   z-index: 10;
 }
 
-/* Фонарик (скрыт по умолчанию) */
+/* Flash-кнопка уменьшенного размера */
 .flash-button {
   width: 36px;
   height: 36px;
   font-size: 20px;
+  padding: 0;
   background: var(--tg-theme-button-color);
   color: #fff;
   border: none;
   border-radius: 50%;
-  display: none;
+  display: none; /* по умолчанию скрыта */
 }
 
-/* Плавный, широкий ползунок */
+/* Плавный и широкий ползунок */
 .zoom-slider {
   width: 200px;
   height: 8px;
@@ -516,7 +519,7 @@ body {
   border-radius: 4px;
   -webkit-appearance: none;
   appearance: none;
-  display: none;
+  display: none; /* по умолчанию скрыт */
 }
 .zoom-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -542,13 +545,12 @@ body {
   transform: scale(1.2);
 }
 
-/* Вывод значения зума */
+/* Значение зума */
 .zoom-value {
-  display: none;
   color: #fff;
   font-size: 0.9rem;
+  display: none;
 }
-
 
 @keyframes spin {
     to {
