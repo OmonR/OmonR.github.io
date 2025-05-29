@@ -128,6 +128,9 @@ const webapp = window.Telegram.WebApp;
 
      let zoom = 1;
 
+    document.getElementById('zoomSlider').style.display = 'block';
+    document.querySelector('.flash-button').style.display = 'block';
+
     document.getElementById('zoomSlider').addEventListener('input', (e) => {
     zoom = parseFloat(e.target.value);
     const vid = document.querySelector('.view.active video');
