@@ -129,7 +129,7 @@ async function startCamera(view) {
     // Показать зум-слайдер и фонарик
     const zoomSlider = document.getElementById('zoomSlider');
     zoomSlider.style.display = 'block';
-    document.querySelector('.flash-button').style.display = 'block';
+    document.querySelector('.spotlight-mask').style.display = 'block';
 
     // Добавляем обработчик зума один раз
     if (!zoomSlider.dataset.listenerAdded) {
