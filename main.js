@@ -150,12 +150,16 @@ async function startCamera(view) {
     }
 
     try {
+        alert("🚀 Запрос доступа к камере...");
         stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: 'environment' }
         });
 
+        alert("✅ Доступ к камере получен. Настраиваем видео...");
         videoElement.srcObject = stream;
+
         await videoElement.play().catch(err => {
+            alert("⚠️ Ошибка запуска видео: " + err.message);
             console.warn('Auto-play error:', err);
         });
 
@@ -168,11 +172,15 @@ async function startCamera(view) {
         captureBtn.style.pointerEvents = 'auto';
         captureBtn.style.display = 'block';
 
+        alert("🎥 Камера успешно активирована.");
+
     } catch (err) {
+        alert("❌ Ошибка доступа к камере: " + err.message);
         console.error('Camera error:', err);
         showError('Не удалось получить доступ к камере. Разрешите доступ и попробуйте снова.');
         captureBtn.disabled = true;
     }
+
 }
  
  function stopCamera() {
