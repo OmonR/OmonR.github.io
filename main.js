@@ -1,191 +1,159 @@
 const webapp = window.Telegram.WebApp;
- webapp.ready();
- webapp.expand();
-  
- // Get signed initData string
- const initData = webapp.initData;
+webapp.ready();
+webapp.expand();
 
- // Set theme variables from Telegram theme params
- const params = webapp.themeParams;
- const root = document.documentElement;
- 
- if (params) {
-     root.style.setProperty('--tg-theme-bg-color', params.bg_color);
-     root.style.setProperty('--tg-theme-text-color', params.text_color);
-     root.style.setProperty('--tg-theme-hint-color', params.hint_color);
-     root.style.setProperty('--tg-theme-link-color', params.link_color);
-     root.style.setProperty('--tg-theme-button-color', params.button_color);
-     root.style.setProperty('--tg-theme-button-text-color', params.button_text_color);
- }
- 
- // 2. DOM Elements and Variables
- const navButtons = document.querySelectorAll('.nav-button');
- const views = document.querySelectorAll('.view');
- const locationButton = document.getElementById('locationButton');
- const continueButton = document.getElementById('continueButton');
- const errorMessage = document.getElementById('error-message');
- const video = document.getElementById('video');
- const canvas = document.getElementById('canvas');
- const captureButton = document.getElementById('captureButton');
- const backButton = document.getElementById('backButton');
- const odometerInput = document.getElementById('odometerInput');
- const odometer = document.getElementById('odometer');
- const continueToPhotos = document.getElementById('continueToPhotos');
- const sessionVideo = document.getElementById('sessionVideo');
- const sessionCanvas = document.getElementById('sessionCanvas');
- const sessionCaptureButton = document.getElementById('sessionCaptureButton');
- const photoCounter = document.getElementById('photoCounter');
- const photoGrid = document.getElementById('photoGrid');
- const urlParams = new URLSearchParams(window.location.search);
- const chatId = urlParams.get('chat_id');
- const msgId  = urlParams.get('msg_id');
- const carId  = urlParams.get('car_id');
- const flashButton = document.getElementById('flashButton');
-const zoomSlider = document.getElementById('zoomSlider');
-const zoomValue = document.getElementById('zoomValue');
-let videoTrack = null;
-let currentZoom = 1;
-let isTorchOn = false;
+const initData = webapp.initData;
+const params = webapp.themeParams;
+const root = document.documentElement;
 
- const action = urlParams.get('action') || 'start';
- 
- let currentMarker = null;
- let stream = null;
- let photoTaken = false;
- let sessionPhotos = [];
- const REQUIRED_PHOTOS = 4;
- 
- // 3. Initialize Map
- const map = L.map('map').setView([51.505, -0.09], 13);
- L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-     attribution: '© OpenStreetMap contributors'
- }).addTo(map);
- 
- odometer.addEventListener('keydown', (e) => {
-     if (e.key === 'Enter') {
-         e.preventDefault();
-         
-         if (!odometer.value) {
-             showError('Пожалуйста, введите показания одометра');
-             return;
-         }
-         
-         // Добавляем вибрацию
-         if (window.Telegram?.WebApp?.HapticFeedback) {
-             Telegram.WebApp.HapticFeedback.impactOccurred('light');
-         }
-         
-         switchView('session');
-     }
- });
- 
- // 4. Utility Functions
- function showError(message) {
-     errorMessage.textContent = message;
-     errorMessage.style.display = 'block';
- }
- 
- function switchView(view) {
-     hideSpinner();
-     navButtons.forEach(btn => {
-         btn.classList.toggle('active', btn.dataset.view === view);
-     });
-     views.forEach(v => {
-         v.classList.toggle('active', v.id === `${view}View`);
-     });
- 
-     // Всегда показываем nav-button при переключении вкладок
-     document.querySelector('.nav-tabs').classList.remove('hidden');
- 
-     if (view === 'camera' || view === 'session') {
-         startCamera(view);
-     } else {
-         stopCamera();
-     }
- 
-     if (view === 'session') {
-         updateSessionUI();
-     }
- }
-
- if (!initData) {
-    showForbiddenError();
-} else {
-    initApp();
-    switchView('map');
+if (params) {
+  Object.entries(params).forEach(([key, val]) => {
+    const cssVar = `--tg-theme-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
+    root.style.setProperty(cssVar, val);
+  });
 }
- 
- function createDraggableMarker(latlng) {
-     if (currentMarker) {
-         map.removeLayer(currentMarker);
-     }
-     currentMarker = L.marker(latlng, { draggable: true }).addTo(map);
-     continueButton.classList.remove('hidden');
- }
- 
+
+// DOM
+const navButtons           = document.querySelectorAll('.nav-button');
+const views                = document.querySelectorAll('.view');
+const locationButton       = document.getElementById('locationButton');
+const continueButton       = document.getElementById('continueButton');
+const errorMessage         = document.getElementById('camera-error');
+
+const video                = document.getElementById('video');
+const canvas               = document.getElementById('canvas');
+const captureButton        = document.getElementById('captureButton');
+const backToCameraBtn      = document.getElementById('backToCamera');
+const odometerInput        = document.getElementById('odometerInput');
+const odometer             = document.getElementById('odometer');
+
+const sessionVideo         = document.getElementById('sessionVideo');
+const sessionCanvas        = document.getElementById('sessionCanvas');
+const sessionCaptureButton = document.getElementById('sessionCaptureButton');
+const photoCounter         = document.getElementById('photoCounter');
+
+const flashButton          = document.getElementById('flashButton');
+const zoomSlider           = document.getElementById('zoomSlider');
+const zoomValue            = document.getElementById('zoomValue');
+
+let stream        = null;
+let videoTrack    = null;
+let currentZoom   = 1;
+let isTorchOn     = false;
+let photoTaken    = false;
+let sessionPhotos = [];
+const REQUIRED_PHOTOS = 4;
+
+// Инициализируем карту
+const map = L.map('map').setView([51.505, -0.09], 13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+// Переключение видов
+function showError(msg) {
+  errorMessage.textContent = msg;
+  errorMessage.style.display = 'block';
+}
+
+function hideError() {
+  errorMessage.style.display = 'none';
+}
+
+function switchView(view) {
+  hideError();
+  navButtons.forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  views.forEach(v => v.id === `${view}View`
+    ? v.classList.add('active')
+    : v.classList.remove('active')
+  );
+  document.querySelector('.nav-tabs').classList.remove('hidden');
+
+  if (view === 'camera' || view === 'session') {
+    startCamera(view);
+  } else {
+    stopCamera();
+  }
+
+  if (view === 'session') {
+    updateSessionUI();
+  }
+}
+
+// Запускаем приложение
+if (!initData) {
+  document.querySelector('.container').classList.add('hidden');
+  document.getElementById('forbiddenPage').classList.remove('hidden');
+} else {
+  initApp();    // ваша реализация
+  switchView('map');
+}
+
+// Камера
 async function startCamera(view) {
-    // Останавливаем старый поток, если есть
-    if (stream) stopCamera();
+  if (stream) stopCamera();
+  if (photoTaken) resetCameraView();
 
-    // Выбираем нужные элементы в зависимости от view
-    const videoElement = view === 'session' ? sessionVideo : video;
-    const canvasEl = view === 'session' ? sessionCanvas : canvas;
-    const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
+  const videoEl   = view === 'session' ? sessionVideo : video;
+  const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
 
-    try {
-        // Запрашиваем доступ к камере
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        videoElement.srcObject = stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    videoEl.srcObject = stream;
+    videoTrack = stream.getVideoTracks()[0];
+    setupZoomAndTorch();
+    await videoEl.play();
 
-        // Получаем трек для управления зумом и torch
-        videoTrack = stream.getVideoTracks()[0];
-        setupZoomAndTorch();
+    captureBtn.classList.remove('hidden');
+    captureBtn.disabled = false;
+  } catch (e) {
+    console.error(e);
+    showError('Не удалось получить доступ к камере.');
+  }
+}
 
-        // Запускаем видео
-        await videoElement.play();
-
-        // Отображаем кнопку захвата
-        captureBtn.classList.remove('hidden');
-        captureBtn.disabled = false;
-    } catch (err) {
-        console.error('Camera error:', err);
-        showError('Не удалось получить доступ к камере.\nРазрешите доступ и попробуйте снова.');
-    }
-    }
-    
 function stopCamera() {
   if (!stream) return;
-  stream.getTracks().forEach(track => track.stop());
+  stream.getTracks().forEach(t => t.stop());
   stream = null;
   videoTrack = null;
+
+  [video, sessionVideo].forEach(v => v.srcObject = null);
+  [captureButton, sessionCaptureButton].forEach(btn => btn.disabled = true);
+}
+
+function resetCameraView() {
+  photoTaken = false;
+  video.style.display = 'block';
+  canvas.style.display = 'none';
+  captureButton.classList.remove('hidden');
+  captureButton.disabled = false;
 }
 
 function setupZoomAndTorch() {
-  const capabilities = videoTrack.getCapabilities();
+  const cap = videoTrack.getCapabilities();
 
-  // Зум
-  if (capabilities.zoom) {
-    zoomSlider.min = capabilities.zoom.min;
-    zoomSlider.max = capabilities.zoom.max;
-    zoomSlider.step = 0.01; // плавный шаг
-    zoomSlider.value = 1;
-    currentZoom = 1;
-    zoomValue.textContent = '1x';
-    
+  // Zoom
+  if (cap.zoom) {
+    zoomSlider.min = cap.zoom.min;
+    zoomSlider.max = cap.zoom.max;
+    zoomSlider.step = 0.01;
+    zoomSlider.value = currentZoom;
+    zoomValue.textContent = `${currentZoom.toFixed(2)}x`;
     zoomSlider.style.display = 'block';
     zoomValue.style.display = 'block';
 
     zoomSlider.oninput = async () => {
       currentZoom = parseFloat(zoomSlider.value);
-      zoomValue.textContent = currentZoom.toFixed(2) + 'x';
+      zoomValue.textContent = `${currentZoom.toFixed(2)}x`;
       try {
         await videoTrack.applyConstraints({ advanced: [{ zoom: currentZoom }] });
-      } catch {}
+      } catch (_) {}
     };
   }
 
-  // Фонарик
-  if (capabilities.torch) {
+  // Torch
+  if (cap.torch) {
     flashButton.style.display = 'block';
     flashButton.onclick = async () => {
       isTorchOn = !isTorchOn;
@@ -193,129 +161,78 @@ function setupZoomAndTorch() {
         await videoTrack.applyConstraints({ advanced: [{ torch: isTorchOn }] });
         flashButton.style.opacity = isTorchOn ? '0.7' : '1';
       } catch {
-        alert('Фонарик не поддерживается');
+        alert('Фонарик не поддерживается этим устройством.');
       }
     };
   }
 }
- 
-function resetCameraView() {
-  video.style.display = 'block';
-  canvas.style.display = 'none';
-  captureButton.classList.remove('hidden');
-  captureButton.disabled = false;
+
+// Снимок фото + обрезка
+function captureAndCropPhoto(v, c) {
+  const ctx = c.getContext('2d');
+  const w   = v.videoWidth;
+  const h   = v.videoHeight;
+  const z   = currentZoom;
+
+  const cw = w / z;
+  const ch = h / z;
+  const cx = (w - cw) / 2;
+  const cy = (h - ch) / 2;
+
+  c.width  = cw;
+  c.height = ch;
+  ctx.drawImage(v, cx, cy, cw, ch, 0, 0, cw, ch);
+
+  return c.toDataURL('image/jpeg');
 }
- function capturePhoto(video, canvas) {
-    const ctx = canvas.getContext('2d');
-    const width = video.videoWidth;
-    const height = video.videoHeight;
 
-    // Устанавливаем размеры canvas как у видеопотока
-    canvas.width = width;
-    canvas.height = height;
+function capturePhoto(v, c) {
+  const ctx = c.getContext('2d');
+  const w   = v.videoWidth;
+  const h   = v.videoHeight;
 
-    // Просто рисуем весь кадр без кропа
-    ctx.drawImage(video, 0, 0, width, height);
+  c.width  = w;
+  c.height = h;
+  ctx.drawImage(v, 0, 0, w, h);
 
-    // Возвращаем base64-изображение
-    return canvas.toDataURL('image/jpeg');
+  return c.toDataURL('image/jpeg');
 }
- 
-    function captureAndCropPhoto(videoEl, canvasEl) {
-        const ctx = canvasEl.getContext('2d');
-        const w = videoEl.videoWidth;
-        const h = videoEl.videoHeight;
-        const zoom = currentZoom || 1;
 
-        // Вычисляем область обрезки
-        const cropW = w / zoom;
-        const cropH = h / zoom;
-        const cropX = (w - cropW) / 2;
-        const cropY = (h - cropH) / 2;
+// События захвата и возврата
+captureButton.addEventListener('click', () => {
+  photoTaken = true;
+  const data = captureAndCropPhoto(video, canvas);
+  video.style.display    = 'none';
+  canvas.style.display   = 'block';
+  captureButton.classList.add('hidden');
+  document.querySelector('.nav-tabs').classList.add('hidden');
+  showReviewButtons(); // ваша реализация
+});
 
-        canvasEl.width = cropW;
-        canvasEl.height = cropH;
-        ctx.drawImage(videoEl, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+sessionCaptureButton.addEventListener('click', () => {
+  const photo = capturePhoto(sessionVideo, sessionCanvas);
+  if (sessionPhotos.length < REQUIRED_PHOTOS) {
+    sessionPhotos.push(photo);
+  }
+  updateSessionUI(); // ваша реализация
+  if (sessionPhotos.length === REQUIRED_PHOTOS) {
+    sendSessionData(); // ваша реализация
+  } else {
+    setTimeout(() => startCamera('session'), 500);
+  }
+});
 
-        return canvasEl.toDataURL('image/jpeg');
-        }
+backToCameraBtn.addEventListener('click', () => {
+  hideSpinner();           // ваша реализация
+  hideReviewButtons();     // ваша реализация
+  photoTaken = false;
+  resetCameraView();
+  startCamera('camera');
+  document.querySelector('.nav-tabs').classList.remove('hidden');
+});
 
-        function showError(msg) {
-        // Ваша реализация вывода ошибки
-        console.warn(msg);
-        }
- 
- 
- function updateSessionUI() {
-     photoCounter.innerHTML = '';
-     for (let i = 0; i < REQUIRED_PHOTOS; i++) {
-         const slot = document.createElement('div');
-         slot.className = `photo-slot-mini ${sessionPhotos[i] ? 'filled' : 'empty'}`;
-         if (sessionPhotos[i]) {
-             const img = document.createElement('img');
-             img.src = sessionPhotos[i];
-             img.alt = `Photo ${i + 1}`;
-             slot.appendChild(img);
-         } else {
-             slot.textContent = i + 1;
-         }
-         photoCounter.appendChild(slot);
-     }
- }
- 
- function showNotification(message) {
-     const notification = document.createElement('div');
-     notification.className = 'notification';
-     notification.textContent = message;
-     document.body.appendChild(notification);
- 
-     notification.offsetHeight;
-     notification.classList.add('show');
- 
-     setTimeout(() => {
-         notification.classList.remove('show');
-         setTimeout(() => notification.remove(), 300);
-     }, 2000);
- }
- 
- function showSpinner() {
-     const el = document.getElementById('photoStatus');
-     el.classList.remove('hidden', 'check');
-     el.querySelector('.spinner').style.display = 'block';
- }
- 
- function hideSpinner() {
-     document.getElementById('photoStatus').classList.add('hidden');
- }
- 
- function showCheckmark() {
-     const el = document.getElementById('photoStatus');
-     el.classList.add('check');
-     el.querySelector('.spinner').style.display = 'none';
- }
- 
- 
- function hideReviewButtons() {
-     document.getElementById('reviewButtons').classList.add('hidden');
- }
- 
- const backToCameraBtn = document.getElementById('backToCamera');
- if (backToCameraBtn) {
-    backToCameraBtn.addEventListener('click', () => {
-    hideSpinner();
-    hideReviewButtons();
+// Остальные функции: updateSessionUI, sendSessionData, initApp и т.п.
 
-    // Сбрасываем флаг и состояние
-    photoTaken = false;
-    resetCameraView();
-
-    // Возвращаем камеру
-    startCamera('camera');
-
-    // Показываем навигацию снизу
-    document.querySelector('.nav-tabs').classList.remove('hidden');
-    });
- }
  
  let reviewHandlerAttached = false;
  
@@ -533,19 +450,18 @@ async function sendSessionData() {
      );
  });
  
-captureButton.addEventListener('click', async () => {
-  photoTaken = true;
-  // Скрываем навигацию
-  document.querySelector('.nav-tabs').classList.add('hidden');
-
-  const croppedPhoto = await captureAndCropPhoto(video, canvas);
-  canvas.style.display = 'block';
-  video.style.display = 'none';
-  // Скрываем кнопку
-  captureButton.classList.add('hidden');
-
-  showReviewButtons();
-});
+ captureButton.addEventListener('click', () => {
+     const croppedPhoto = captureAndCropPhoto(video, canvas);
+     stopCamera();
+     canvas.style.display = 'block';
+     video.style.display = 'none';
+     captureButton.style.display = 'none';
+ 
+     // Скрываем nav-button
+     document.querySelector('.nav-tabs').classList.add('hidden');
+     
+     showReviewButtons();
+ });
  
  sessionCaptureButton.addEventListener('click', () => {
      const photoData = capturePhoto(sessionVideo, sessionCanvas);
@@ -572,31 +488,6 @@ captureButton.addEventListener('click', async () => {
  continueToPhotos.addEventListener('click', () => {
      if (odometer.value) switchView('session');
  });
-
- zoomSlider.addEventListener('input', async () => {
-    currentZoom = parseFloat(zoomSlider.value);
-    zoomValue.textContent = currentZoom + 'x';
-    if (videoTrack) {
-        try {
-            await videoTrack.applyConstraints({ advanced: [{ zoom: currentZoom }] });
-        } catch (e) {
-            // На некоторых устройствах не поддерживается
-        }
-    }
-});
-
-flashButton.addEventListener('click', async () => {
-    if (videoTrack && videoTrack.getCapabilities().torch) {
-        isTorchOn = !isTorchOn;
-        try {
-            await videoTrack.applyConstraints({ advanced: [{ torch: isTorchOn }] });
-            flashButton.style.background = isTorchOn ? '#ffd900' : 'var(--tg-theme-button-color)';
-        } catch (e) {
-            alert('Фонарик не поддерживается этим устройством');
-        }
-    }
-});
-
  
  // 6. Initialize Application
  function initApp() {
