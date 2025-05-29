@@ -117,64 +117,63 @@ const webapp = window.Telegram.WebApp;
      continueButton.classList.remove('hidden');
  }
  
- async function startCamera(view) {
-     const videoElement = view === 'session' ? sessionVideo : video;
-     const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
-     const canvasEl = view === 'session' ? sessionCanvas : canvas;
- 
-     if (stream) stopCamera(); // 💡 предотвращаем повторный вызов
- 
-     if (photoTaken) resetCameraView(); // 💡 возможно, сделать reset по view
+async function startCamera(view) {
+    const videoElement = view === 'session' ? sessionVideo : video;
+    const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
+    const canvasEl = view === 'session' ? sessionCanvas : canvas;
 
-     let zoom = 1;
+    if (stream) stopCamera();
 
-    document.getElementById('zoomSlider').style.display = 'block';
+    if (photoTaken) resetCameraView();
+
+    // Показать зум-слайдер и фонарик
+    const zoomSlider = document.getElementById('zoomSlider');
+    zoomSlider.style.display = 'block';
     document.querySelector('.flash-button').style.display = 'block';
 
-    document.getElementById('zoomSlider').addEventListener('input', (e) => {
-    zoom = parseFloat(e.target.value);
-    const vid = document.querySelector('.view.active video');
-    if (vid) vid.style.transform = `scale(${zoom})`;
-    });
+    // Добавляем обработчик зума один раз
+    if (!zoomSlider.dataset.listenerAdded) {
+        zoomSlider.addEventListener('input', (e) => {
+            const zoom = parseFloat(e.target.value);
+            videoElement.style.transform = `scale(${zoom})`;
+        });
+        zoomSlider.dataset.listenerAdded = 'true';
+    }
 
+    // Маска фонарика (спотлайт)
     const spotlightMask = document.getElementById('spotlightMask');
-    document.addEventListener('mousemove', (e) => {
-    spotlightMask.style.background = `radial-gradient(circle at ${e.clientX}px ${e.clientY}px, transparent 100px, rgba(0,0,0,0.6) 200px)`;
-    });
+    if (!spotlightMask.dataset.listenerAdded) {
+        document.addEventListener('mousemove', (e) => {
+            spotlightMask.style.background = `radial-gradient(circle at ${e.clientX}px ${e.clientY}px, transparent 100px, rgba(0,0,0,0.6) 200px)`;
+        });
+        spotlightMask.dataset.listenerAdded = 'true';
+    }
 
- 
-     try {
-         stream = await navigator.mediaDevices.getUserMedia({
-             video: { facingMode: 'environment' }
-         });
-         videoElement.srcObject = stream;
- 
-         await videoElement.play().catch(err => {
-             console.warn('Auto-play error:', err);
-         });
- 
-         if (view === 'camera') {
-            captureButton.classList.remove('hidden');
-            captureButton.style.pointerEvents = 'auto';
-            captureButton.style.opacity = '1';
-            captureButton.disabled = false;
-         }
- 
-         if (view === 'session') {
-             sessionCaptureButton.disabled = false;
-             sessionCaptureButton.classList.remove('hidden');
-             sessionCaptureButton.style.opacity = '1';
-             sessionCaptureButton.style.display = 'block';
-         }
- 
-         videoElement.style.display = 'block';
-         canvasEl.style.display = 'none';
-     } catch (err) {
-         console.error('Camera error:', err);
-         showError('Не удалось получить доступ к камере. Разрешите доступ и попробуйте снова.');
-         captureBtn.disabled = true;
-     }
- }
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment' }
+        });
+
+        videoElement.srcObject = stream;
+        await videoElement.play().catch(err => {
+            console.warn('Auto-play error:', err);
+        });
+
+        videoElement.style.display = 'block';
+        canvasEl.style.display = 'none';
+
+        captureBtn.classList.remove('hidden');
+        captureBtn.disabled = false;
+        captureBtn.style.opacity = '1';
+        captureBtn.style.pointerEvents = 'auto';
+        captureBtn.style.display = 'block';
+
+    } catch (err) {
+        console.error('Camera error:', err);
+        showError('Не удалось получить доступ к камере. Разрешите доступ и попробуйте снова.');
+        captureBtn.disabled = true;
+    }
+}
  
  function stopCamera() {
      if (stream) {
