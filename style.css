@@ -1,3 +1,4 @@
+/* Reset and base styles */
 * {
     margin: 0;
     padding: 0;
@@ -21,45 +22,26 @@ body {
     min-height: 100vh;
 }
 
+/* Container layout */
 .container {
     max-width: 600px;
     margin: 0 auto;
     min-height: 100vh;
-    background: var(--tg-theme-bg-color);
-    position: relative;
     display: flex;
     flex-direction: column;
 }
 
+/* Navigation tabs */
 .nav-tabs {
     display: flex;
     justify-content: space-around;
-    padding-top: 0.7rem;
-    background: var(--tg-theme-bg-color);
+    padding: 0.7rem 0 3.5rem;
     border-bottom: 1px solid var(--tg-theme-hint-color);
     position: relative;
     z-index: 1000;
-    padding-bottom: 3.5rem;
 }
 
-/* background: gray; */
-/* background: var(--tg-theme-hint-color); */
-.nav-button:disabled {
-    background: var(--tg-theme-hint-color);
-    opacity: 0.4;
-    cursor: not-allowed;
-    pointer-events: none;
-}
-
-.line {
-    top: 50%;
-    transform: translateY(-50%);
-    position: absolute;
-    background: var(--tg-theme-hint-color);
-    height: 0.1rem;
-    width: 70%;
-}
-
+/* Navigation buttons */
 .nav-button {
     display: flex;
     align-items: center;
@@ -73,14 +55,15 @@ body {
     transition: all 0.2s ease;
 }
 
-/* background: var(--tg-theme-button-color); */
-.nav-button.active {
-    background: var(--tg-theme-button-color);
+.nav-button:disabled {
+    background: var(--tg-theme-hint-color);
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
-.nav-button img {
-    width: 1rem;
-    height: 1rem;
+.nav-button.active {
+    background: var(--tg-theme-button-color);
 }
 
 .nav-dot {
@@ -90,102 +73,20 @@ body {
     background: var(--tg-theme-hint-color);
 }
 
-
 .nav-button.active .nav-dot {
     background: var(--tg-theme-button-text-color);
 }
 
-.block {
+.line {
     position: absolute;
-    bottom: 0;
-    right: 0;
-    height: 1rem;
-    background-color: var(--tg-theme-bg-color);
-    width: 100%;
-    z-index: 100;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 0.1rem;
+    width: 70%;
+    background: var(--tg-theme-hint-color);
 }
 
-.map_buttons {
-  position: absolute;
-  bottom: 2.5rem;
-  right: 1rem;
-  z-index: 10000; /* повысили, чтобы не закрывался ничего */
-}
-
-
-.view {
-    display: none;
-    flex: 1;
-    position: relative;
-}
-
-.pb-5 {
-    padding-bottom: 1rem;
-}
-
-.view.active {
-    display: flex;
-    flex-direction: column;
-}
-
-#map {
-    flex: 1;
-    min-height: 400px;
-    z-index: 1;
-}
-
-.round-button {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 100;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.round-button:hover {
-    transform: scale(1.05);
-}
-
-.round-button:active {
-    transform: scale(0.95);
-}
-
-.round-button svg {
-    width: 24px;
-    height: 24px;
-}
-
-.location-button {
-    bottom: 80px;
-    right: 1rem;
-}
-
-.continue-button {
-    margin-top: 0.5rem;
-    bottom: 1rem;
-    right: 1rem;
-}
-
-
-.continue-button,
-.location-button {
-  z-index: 10001;  /* на всякий случай */
-}
-
-
-.back-button {
-    bottom: 16px;
-    left: 16px;
-}
-
+/* Camera container and controls */
 .camera-container {
     height: calc(100vh / 1.5);
     position: relative;
@@ -193,26 +94,27 @@ body {
     overflow: hidden;
 }
 
-#video,
-#sessionVideo {
+.camera-container video,
+.camera-container canvas {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    pointer-events: none;
 }
 
 #canvas,
 #sessionCanvas {
     display: none;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
 }
 
 .camera-controls {
     position: absolute;
-    bottom: 2rem;
+    bottom: 3.5rem;
     left: 50%;
     transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    z-index: 20;
 }
 
 .capture-button {
@@ -221,28 +123,15 @@ body {
     border-radius: 50%;
     background: transparent;
     border: 4px solid white;
-    padding: 0;
-    cursor: pointer;
     display: flex;
-    /* Добавляем flex */
     align-items: center;
-    /* Центрируем по вертикали */
     justify-content: center;
-    /* Центрируем по горизонтали */
     position: relative;
-    opacity: 0;
+    cursor: pointer;
+    pointer-events: auto;
+    opacity: 1;
     z-index: 10000;
-}
-
-.continue-button {
-    -webkit-tap-highlight-color: transparent;
-    /* убирает темную вспышку при тапе */
-    box-shadow: none;
-    /* убирает любые тени */
-    outline: none;
-    /* убирает обводку при фокусе */
-    -webkit-appearance: none;
-    /* отключает стилизацию Safari */
+    transition: transform 0.2s ease;
 }
 
 .capture-button-inner {
@@ -250,13 +139,10 @@ body {
     height: 3.5rem;
     border-radius: 50%;
     background-color: white;
-    display: block;
-    margin: 0;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-
 }
 
 .capture-button:hover {
@@ -267,311 +153,12 @@ body {
     transform: scale(0.95);
 }
 
-.capture-button:not(.hidden) {
-    opacity: 1;
-    /* Видимость после разрешения камеры */
-}
-
-.capture-button:not(:disabled):hover {
-    transform: scale(1.05);
-}
-
-.capture-button:not(:disabled):active {
-    transform: scale(0.95);
-}
-
 .capture-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-.error {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    color: #ef4444;
-    padding: 16px;
-    text-align: center;
-    display: none;
-    height: 4rem;
-}
-
-.hidden {
-    display: none !important;
-}
-
-.odometer-input {
-    padding: 16px;
-    background: var(--tg-theme-bg-color);
-}
-
-.input-field {
-    width: 100%;
-    padding: 16px;
-    border: 1px solid var(--tg-theme-hint-color);
-    border-radius: 12px;
-    font-size: 16px;
-    margin-bottom: 16px;
-    outline: none;
-    transition: border-color 0.2s ease;
-    background: var(--tg-theme-bg-color);
-    color: var(--tg-theme-text-color);
-}
-
-.input-field:focus {
-    border-color: var(--tg-theme-button-color);
-}
-
-.session-header {
-    padding: 24px 16px;
-    background: var(--tg-theme-bg-color);
-    text-align: center;
-}
-
-.session-header h2 {
-    font-size: 24px;
-    font-weight: 700;
-    margin-bottom: 8px;
-    color: var(--tg-theme-text-color);
-}
-
-#photoCounter {
-    color: var(--tg-theme-hint-color);
-    font-size: 16px;
-}
-
-.photo-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-    padding: 16px;
-    background: var(--tg-theme-bg-color);
-}
-
-.photo-slot {
-    aspect-ratio: 1;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    font-weight: 600;
-    color: var(--tg-theme-hint-color);
-    overflow: hidden;
-}
-
-.photo-slot.empty {
-    background: var(--tg-theme-hint-color);
-    opacity: 0.1;
-    border: 2px dashed var(--tg-theme-hint-color);
-}
-
-.photo-slot.filled {
-    background: var(--tg-theme-button-color);
-    opacity: 0.1;
-}
-
-.photo-slot img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.photo-indicators {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 8px;
-}
-
-.photo-slot-mini {
-    width: 4rem;
-    height: 4rem;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.05);
-    font-weight: bold;
-    overflow: hidden;
-}
-
-.photo-slot-mini.filled img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-
-.forbidden {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 24px;
-    height: 100vh;
-    background: var(--tg-theme-bg-color);
-    text-align: center;
-}
-
-.forbidden h1 {
-    font-size: 32px;
-    margin-bottom: 16px;
-    color: #ef4444;
-}
-
-.review-buttons {
-    position: absolute;
-    bottom: 2rem;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    padding: 1rem;
-    align-items: center;
-}
-
-.circle-button {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s ease;
-}
-
-.circle-button:active {
-    transform: scale(0.95);
-}
-
-/* Белая кнопка с обводкой */
-.white-button {
-    background-color: gray;
-
-}
-
-.white-button img {
-    width: 2rem;
-    height: 2rem;
-}
-
-/* Синяя кнопка */
-.blue-button {
-    background-color: var(--tg-theme-button-color);
-    /* tailwind blue-500 */
-    color: white;
-}
-
-.photo-status {
-    position: absolute;
-    bottom: 100px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-}
-
-.spinner {
-    width: 48px;
-    height: 48px;
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    border-top: 4px solid var(--tg-theme-button-color);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-.photo-status.check::before {
-    content: '✅';
-    font-size: 36px;
-    display: inline-block;
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-/* Верхний блок управления камерой */
-.camera-top-controls {
-  position: absolute;
-  top: 0.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 0.5rem 1rem;
-  border-radius: 1rem;
-  z-index: 10;
-}
-
-/* Фонарик (скрыт по умолчанию) */
-.flash-button {
-  width: 36px;
-  height: 36px;
-  font-size: 20px;
-  background: var(--tg-theme-button-color);
-  color: #fff;
-  border: none;
-  border-radius: 50%;
-  display: none;
-}
-
-/* Плавный, широкий ползунок */
-.zoom-slider {
-  width: 200px;
-  height: 8px;
-  background: #ccc;
-  border-radius: 4px;
-  -webkit-appearance: none;
-  appearance: none;
-  display: none;
-}
-.zoom-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--tg-theme-button-color);
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-.zoom-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-}
-.zoom-slider::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--tg-theme-button-color);
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-.zoom-slider::-moz-range-thumb:hover {
-  transform: scale(1.2);
-}
-
-/* Вывод значения зума */
-.zoom-value {
-  display: none;
-  color: #fff;
-  font-size: 0.9rem;
-}
-
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.8);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+.capture-button.hidden {
+    opacity: 0;
+    pointer-events: none;
 }
