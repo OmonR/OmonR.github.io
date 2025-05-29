@@ -618,7 +618,9 @@ html, body {
 }
 
 canvas {
-  touch-action: pan-x pan-y; /* разрешает скролл, но запрещает zoom */
+  position: absolute;
+  z-index: 1;
+  touch-action: pan-x pan-y; 
 }
 
 /* Верхний блок управления камерой */
@@ -703,7 +705,6 @@ canvas {
   color: #fff;
   font-size: 0.9rem;
 }
-
 
 
 @keyframes spin  {
