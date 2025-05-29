@@ -34,16 +34,14 @@
         <!-- Camera View -->
         <div id="cameraView" class="view pb-5">
             <div class="session-header">
-                <h2>Фотография одометра</h2>
+                <h2>Фотография одометрa</h2>
             </div>
             <div class="camera-container">
-                <!-- Top controls: torch + zoom -->
-                <div class="camera-top-controls">
-                <button id="flashButton" class="flash-button" aria-label="Фонарик">🔦</button>
-                <input id="zoomSlider" type="range" min="1" max="4" step="0.01" value="1" class="zoom-slider">
-                <span id="zoomValue" class="zoom-value">1x</span>
-                </div>
                 <video id="video" autoplay playsinline></video>
+                <div class="zoom-controls">
+                <input type="range" id="zoomSlider" min="1" max="3" step="0.1" value="1">
+                </div>
+                <div class="spotlight-mask" id="spotlightMask"></div>
                 <canvas id="canvas"></canvas>
                 <div class="camera-controls">
                     <button id="captureButton" class="capture-button">
@@ -54,7 +52,8 @@
 
             <p id="camera-error" class="error"></p>
             <div id="odometerInput" class="odometer-input hidden">
-                <input type="number" id="odometer" placeholder="Подтвердите показания одометра" class="input-field" inputmode="decimal" enterkeyhint="done">
+                <input type="number" id="odometer" placeholder="Подтвердите показания одометра" class="input-field"
+                    inputmode="decimal" enterkeyhint="done">
             </div>
             <!-- перед reviewButtons -->
             <div id="photoStatus" class="photo-status hidden">
@@ -63,7 +62,7 @@
             <!-- 🔘 Кнопки подтверждения фото -->
             <div id="reviewButtons" class="review-buttons hidden">
                 <button id="backToCamera" class="circle-button white-button">
-                <img src="assets/Restart.svg" alt="">
+                   <img src="assets/Restart.svg" alt="">
                 </button>
                 <button id="submitOdometerPhoto" class="circle-button blue-button">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -78,7 +77,9 @@
         <div id="sessionView" class="view pb-5">
             <div class="session-header">
                 <h2>Фотографии автомобиля</h2>
-                <div id="photoCounter" class="photo-indicators"></div>
+                <div id="photoCounter" class="photo-indicators">
+                    <!-- будут вставлены слоты с фото -->
+                </div>
             </div>
             <div class="camera-container">
                 <video id="sessionVideo" autoplay playsinline></video>
@@ -94,14 +95,17 @@
         <nav class="nav-tabs">
             <button class="nav-button active" data-view="map" disabled>
                 <img src="/assets/Map Point Icon.svg" alt="">
+                <!-- <div class="nav-dot"></div> -->
             </button>
             <button class="nav-button" data-view="camera" disabled>
                 <img src="/assets/Odometer.svg" alt="">
             </button>
             <button class="nav-button" data-view="session" disabled>
+
                 <img src="/assets/Travel and places Icon.svg" alt="">
             </button>
         </nav>
+
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

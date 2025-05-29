@@ -1,11 +1,14 @@
-* {
+*  {
+
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
 }
 
-:root {
+
+:root  {
+
     --tg-theme-bg-color: #ffffff;
     --tg-theme-text-color: #000000;
     --tg-theme-hint-color: #999999;
@@ -14,14 +17,18 @@
     --tg-theme-button-text-color: #ffffff;
 }
 
-body {
+
+body  {
+
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--tg-theme-bg-color);
     color: var(--tg-theme-text-color);
     min-height: 100vh;
 }
 
-.container {
+
+.container  {
+
     max-width: 600px;
     margin: 0 auto;
     min-height: 100vh;
@@ -31,7 +38,9 @@ body {
     flex-direction: column;
 }
 
-.nav-tabs {
+
+.nav-tabs  {
+
     display: flex;
     justify-content: space-around;
     padding-top: 0.7rem;
@@ -42,16 +51,20 @@ body {
     padding-bottom: 3.5rem;
 }
 
+
 /* background: gray; */
 /* background: var(--tg-theme-hint-color); */
-.nav-button:disabled {
+.nav-button:disabled  {
+
     background: var(--tg-theme-hint-color);
     opacity: 0.4;
     cursor: not-allowed;
     pointer-events: none;
 }
 
-.line {
+
+.line  {
+
     top: 50%;
     transform: translateY(-50%);
     position: absolute;
@@ -60,7 +73,9 @@ body {
     width: 70%;
 }
 
-.nav-button {
+
+.nav-button  {
+
     display: flex;
     align-items: center;
     justify-content: center;
@@ -73,17 +88,23 @@ body {
     transition: all 0.2s ease;
 }
 
+
 /* background: var(--tg-theme-button-color); */
-.nav-button.active {
+.nav-button.active  {
+
     background: var(--tg-theme-button-color);
 }
 
-.nav-button img {
+
+.nav-button img  {
+
     width: 1rem;
     height: 1rem;
 }
 
-.nav-dot {
+
+.nav-dot  {
+
     width: 8px;
     height: 8px;
     border-radius: 50%;
@@ -91,50 +112,66 @@ body {
 }
 
 
-.nav-button.active .nav-dot {
+
+.nav-button.active .nav-dot  {
+
     background: var(--tg-theme-button-text-color);
 }
 
-.block {
+
+.block  {
+
     position: absolute;
     bottom: 0;
     right: 0;
     height: 1rem;
-    background-color: var(--tg-theme-bg-color);
+    background-color: white;
     width: 100%;
     z-index: 100;
 }
 
-.map_buttons {
-  position: absolute;
-  bottom: 2.5rem;
-  right: 1rem;
-  z-index: 10000; /* повысили, чтобы не закрывался ничего */
+
+.map_buttons  {
+
+    position: absolute;
+    bottom: 2.5rem;
+    right: 1rem;
+    z-index: 100;
 }
 
 
-.view {
+
+.view  {
+
     display: none;
     flex: 1;
     position: relative;
 }
 
-.pb-5 {
+
+.pb-5  {
+
     padding-bottom: 1rem;
 }
 
-.view.active {
+
+.view.active  {
+
     display: flex;
     flex-direction: column;
 }
 
-#map {
+
+#map  {
+
     flex: 1;
     min-height: 400px;
     z-index: 1;
 }
 
-.round-button {
+
+.round-button  {
+
     width: 56px;
     height: 56px;
     border-radius: 50%;
@@ -150,81 +187,87 @@ body {
     transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
-.round-button:hover {
+
+.round-button:hover  {
+
     transform: scale(1.05);
 }
 
-.round-button:active {
+
+.round-button:active  {
+
     transform: scale(0.95);
 }
 
-.round-button svg {
+
+.round-button svg  {
+
     width: 24px;
     height: 24px;
 }
 
-.location-button {
+
+.location-button  {
+
     bottom: 80px;
     right: 1rem;
 }
 
-.continue-button {
+
+.continue-button  {
+
     margin-top: 0.5rem;
     bottom: 1rem;
     right: 1rem;
 }
 
 
-.continue-button,
-.location-button {
-  z-index: 10001;  /* на всякий случай */
-}
+.back-button  {
 
-
-.back-button {
     bottom: 16px;
     left: 16px;
 }
 
-.camera-container {
+
+.camera-container  {
+
     height: calc(100vh / 1.5);
     position: relative;
     background: #000;
     overflow: hidden;
 }
 
+
 #video,
-#sessionVideo {
+#sessionVideo  {
+
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
+
 #canvas,
-#sessionCanvas {
+#sessionCanvas  {
+
     display: none;
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.camera-container video,
-.camera-container canvas {
-  pointer-events: none;
+
+.camera-controls  {
+
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
-/* Поднимаем контейнер с кнопкой захвата над всем */
-.camera-controls {
-  position: absolute;       /* уже есть, но дублируем на всякий */
-  bottom: 3.5rem;           /* или ваш отступ */
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  justify-content: center;
-  z-index: 20;              /* выше, чем у видео/канвас */
-}
 
-.capture-button {
+.capture-button  {
+
     width: 4.5rem;
     height: 4.5rem;
     border-radius: 50%;
@@ -239,15 +282,12 @@ body {
     justify-content: center;
     /* Центрируем по горизонтали */
     position: relative;
-    z-index: 10000;
+    opacity: 0;
 }
 
-.capture-button {
-  pointer-events: auto;
-  opacity: 1;               /* убедитесь, что opacity выставлен в 1 */
-}
 
-.continue-button {
+.continue-button  {
+
     -webkit-tap-highlight-color: transparent;
     /* убирает темную вспышку при тапе */
     box-shadow: none;
@@ -258,7 +298,9 @@ body {
     /* отключает стилизацию Safari */
 }
 
-.capture-button-inner {
+
+.capture-button-inner  {
+
     width: 3.5rem;
     height: 3.5rem;
     border-radius: 50%;
@@ -272,33 +314,47 @@ body {
 
 }
 
-.capture-button:hover {
+
+.capture-button:hover  {
+
     transform: scale(1.05);
 }
 
-.capture-button:active {
+
+.capture-button:active  {
+
     transform: scale(0.95);
 }
 
-.capture-button:not(.hidden) {
+
+.capture-button:not(.hidden)  {
+
     opacity: 1;
     /* Видимость после разрешения камеры */
 }
 
-.capture-button:not(:disabled):hover {
+
+.capture-button:not(:disabled):hover  {
+
     transform: scale(1.05);
 }
 
-.capture-button:not(:disabled):active {
+
+.capture-button:not(:disabled):active  {
+
     transform: scale(0.95);
 }
 
-.capture-button:disabled {
+
+.capture-button:disabled  {
+
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-.error {
+
+.error  {
+
     position: absolute;
     bottom: 0;
     right: 0;
@@ -309,16 +365,22 @@ body {
     height: 4rem;
 }
 
-.hidden {
+
+.hidden  {
+
     display: none !important;
 }
 
-.odometer-input {
+
+.odometer-input  {
+
     padding: 16px;
     background: var(--tg-theme-bg-color);
 }
 
-.input-field {
+
+.input-field  {
+
     width: 100%;
     padding: 16px;
     border: 1px solid var(--tg-theme-hint-color);
@@ -331,29 +393,39 @@ body {
     color: var(--tg-theme-text-color);
 }
 
-.input-field:focus {
+
+.input-field:focus  {
+
     border-color: var(--tg-theme-button-color);
 }
 
-.session-header {
+
+.session-header  {
+
     padding: 24px 16px;
     background: var(--tg-theme-bg-color);
     text-align: center;
 }
 
-.session-header h2 {
+
+.session-header h2  {
+
     font-size: 24px;
     font-weight: 700;
     margin-bottom: 8px;
     color: var(--tg-theme-text-color);
 }
 
-#photoCounter {
+
+#photoCounter  {
+
     color: var(--tg-theme-hint-color);
     font-size: 16px;
 }
 
-.photo-grid {
+
+.photo-grid  {
+
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
@@ -361,7 +433,9 @@ body {
     background: var(--tg-theme-bg-color);
 }
 
-.photo-slot {
+
+.photo-slot  {
+
     aspect-ratio: 1;
     border-radius: 12px;
     display: flex;
@@ -373,31 +447,41 @@ body {
     overflow: hidden;
 }
 
-.photo-slot.empty {
+
+.photo-slot.empty  {
+
     background: var(--tg-theme-hint-color);
     opacity: 0.1;
     border: 2px dashed var(--tg-theme-hint-color);
 }
 
-.photo-slot.filled {
+
+.photo-slot.filled  {
+
     background: var(--tg-theme-button-color);
     opacity: 0.1;
 }
 
-.photo-slot img {
+
+.photo-slot img  {
+
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.photo-indicators {
+
+.photo-indicators  {
+
     display: flex;
     justify-content: center;
     gap: 8px;
     margin-top: 8px;
 }
 
-.photo-slot-mini {
+
+.photo-slot-mini  {
+
     width: 4rem;
     height: 4rem;
     border-radius: 8px;
@@ -409,14 +493,18 @@ body {
     overflow: hidden;
 }
 
-.photo-slot-mini.filled img {
+
+.photo-slot-mini.filled img  {
+
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
 
-.forbidden {
+
+.forbidden  {
+
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -427,13 +515,17 @@ body {
     text-align: center;
 }
 
-.forbidden h1 {
+
+.forbidden h1  {
+
     font-size: 32px;
     margin-bottom: 16px;
     color: #ef4444;
 }
 
-.review-buttons {
+
+.review-buttons  {
+
     position: absolute;
     bottom: 2rem;
     width: 100%;
@@ -443,7 +535,9 @@ body {
     align-items: center;
 }
 
-.circle-button {
+
+.circle-button  {
+
     width: 56px;
     height: 56px;
     border-radius: 50%;
@@ -456,29 +550,39 @@ body {
     transition: transform 0.2s ease;
 }
 
-.circle-button:active {
+
+.circle-button:active  {
+
     transform: scale(0.95);
 }
 
+
 /* Белая кнопка с обводкой */
-.white-button {
+.white-button  {
+
     background-color: gray;
 
 }
 
-.white-button img {
+
+.white-button img  {
+
     width: 2rem;
     height: 2rem;
 }
 
+
 /* Синяя кнопка */
-.blue-button {
+.blue-button  {
+
     background-color: var(--tg-theme-button-color);
     /* tailwind blue-500 */
     color: white;
 }
 
-.photo-status {
+
+.photo-status  {
+
     position: absolute;
     bottom: 100px;
     left: 50%;
@@ -486,7 +590,9 @@ body {
     z-index: 10;
 }
 
-.spinner {
+
+.spinner  {
+
     width: 48px;
     height: 48px;
     border: 4px solid rgba(0, 0, 0, 0.1);
@@ -495,15 +601,19 @@ body {
     animation: spin 1s linear infinite;
 }
 
-.photo-status.check::before {
+
+.photo-status.check::before  {
+
     content: '✅';
     font-size: 36px;
     display: inline-block;
     animation: fadeIn 0.3s ease-in-out;
 }
 
+
 /* Верхний блок управления камерой */
-.camera-top-controls {
+.camera-top-controls  {
+
   position: absolute;
   top: 0.5rem;
   left: 50%;
@@ -517,8 +627,10 @@ body {
   z-index: 10;
 }
 
+
 /* Фонарик (скрыт по умолчанию) */
-.flash-button {
+.flash-button  {
+
   width: 36px;
   height: 36px;
   font-size: 20px;
@@ -529,8 +641,10 @@ body {
   display: none;
 }
 
+
 /* Плавный, широкий ползунок */
-.zoom-slider {
+.zoom-slider  {
+
   width: 200px;
   height: 8px;
   background: #ccc;
@@ -539,7 +653,9 @@ body {
   appearance: none;
   display: none;
 }
-.zoom-slider::-webkit-slider-thumb {
+
+.zoom-slider::-webkit-slider-thumb  {
+
   -webkit-appearance: none;
   width: 16px;
   height: 16px;
@@ -548,10 +664,14 @@ body {
   cursor: pointer;
   transition: transform 0.2s ease;
 }
-.zoom-slider::-webkit-slider-thumb:hover {
+
+.zoom-slider::-webkit-slider-thumb:hover  {
+
   transform: scale(1.2);
 }
-.zoom-slider::-moz-range-thumb {
+
+.zoom-slider::-moz-range-thumb  {
+
   width: 16px;
   height: 16px;
   border-radius: 50%;
@@ -559,32 +679,46 @@ body {
   cursor: pointer;
   transition: transform 0.2s ease;
 }
-.zoom-slider::-moz-range-thumb:hover {
+
+.zoom-slider::-moz-range-thumb:hover  {
+
   transform: scale(1.2);
 }
 
+
 /* Вывод значения зума */
-.zoom-value {
+.zoom-value  {
+
   display: none;
   color: #fff;
   font-size: 0.9rem;
 }
 
 
-@keyframes spin {
-    to {
+
+@keyframes spin  {
+
+    to  {
+
         transform: rotate(360deg);
     }
+
 }
 
-@keyframes fadeIn {
-    from {
+
+@keyframes fadeIn  {
+
+    from  {
+
         opacity: 0;
         transform: scale(0.8);
     }
 
-    to {
+
+    to  {
+
         opacity: 1;
         transform: scale(1);
     }
+
 }
