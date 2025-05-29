@@ -167,39 +167,35 @@ function setupZoomAndTorch() {
   if (capabilities.zoom) {
     zoomSlider.min = capabilities.zoom.min;
     zoomSlider.max = capabilities.zoom.max;
-    zoomSlider.step = capabilities.zoom.step;
-    zoomSlider.value = capabilities.zoom.min;
-    currentZoom = capabilities.zoom.min;
-    zoomValue.textContent = currentZoom + 'x';
-    zoomSlider.style.display = 'inline-block';
-    zoomValue.style.display = 'inline-block';
+    zoomSlider.step = 0.01; // плавный шаг
+    zoomSlider.value = 1;
+    currentZoom = 1;
+    zoomValue.textContent = '1x';
+    
+    zoomSlider.style.display = 'block';
+    zoomValue.style.display = 'block';
 
     zoomSlider.oninput = async () => {
       currentZoom = parseFloat(zoomSlider.value);
-      zoomValue.textContent = currentZoom + 'x';
+      zoomValue.textContent = currentZoom.toFixed(2) + 'x';
       try {
         await videoTrack.applyConstraints({ advanced: [{ zoom: currentZoom }] });
       } catch {}
     };
-  } else {
-    zoomSlider.style.display = 'none';
-    zoomValue.style.display = 'none';
   }
 
   // Фонарик
   if (capabilities.torch) {
-    flashButton.style.display = 'inline-block';
+    flashButton.style.display = 'block';
     flashButton.onclick = async () => {
       isTorchOn = !isTorchOn;
       try {
         await videoTrack.applyConstraints({ advanced: [{ torch: isTorchOn }] });
-        flashButton.style.background = isTorchOn ? '#ffd900' : '';
+        flashButton.style.opacity = isTorchOn ? '0.7' : '1';
       } catch {
-        alert('Фонарик не поддерживается этим устройством');
+        alert('Фонарик не поддерживается');
       }
     };
-  } else {
-    flashButton.style.display = 'none';
   }
 }
  
