@@ -1,6 +1,6 @@
-// index.html
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div id="forbiddenPage" class="forbidden hidden">
         <h1>❌ Forbidden</h1>
@@ -38,9 +39,9 @@
             <div class="camera-container">
                 <!-- Top controls: torch + zoom -->
                 <div class="camera-top-controls">
-                  <button id="flashButton" class="flash-button" aria-label="Фонарик">🔦</button>
-                  <input id="zoomSlider" type="range" min="1" max="4" step="0.01" value="1" class="zoom-slider">
-                  <span id="zoomValue" class="zoom-value">1x</span>
+                <button id="flashButton" class="flash-button" aria-label="Фонарик">🔦</button>
+                <input id="zoomSlider" type="range" min="1" max="4" step="0.01" value="1" class="zoom-slider">
+                <span id="zoomValue" class="zoom-value">1x</span>
                 </div>
                 <video id="video" autoplay playsinline></video>
                 <canvas id="canvas"></canvas>
@@ -62,7 +63,7 @@
             <!-- 🔘 Кнопки подтверждения фото -->
             <div id="reviewButtons" class="review-buttons hidden">
                 <button id="backToCamera" class="circle-button white-button">
-                   <img src="assets/Restart.svg" alt="">
+                <img src="assets/Restart.svg" alt="">
                 </button>
                 <button id="submitOdometerPhoto" class="circle-button blue-button">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -106,5 +107,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="main.js"></script>
-</body>
+   </body>
+
 </html>
