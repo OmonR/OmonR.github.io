@@ -199,16 +199,12 @@ function setupZoomAndTorch() {
   }
 }
  
- function resetCameraView() {
-     photoTaken = false;
-     video.style.display = 'block';
-     canvas.style.display = 'none';
-     captureButton.style.display = 'block';
-     odometerInput.classList.add('hidden');
-     backButton.classList.add('hidden');
-     odometer.value = '';
- }
- 
+function resetCameraView() {
+  video.style.display = 'block';
+  canvas.style.display = 'none';
+  captureButton.classList.remove('hidden');
+  captureButton.disabled = false;
+}
  function capturePhoto(video, canvas) {
     const ctx = canvas.getContext('2d');
     const width = video.videoWidth;
@@ -305,19 +301,20 @@ function setupZoomAndTorch() {
  
  const backToCameraBtn = document.getElementById('backToCamera');
  if (backToCameraBtn) {
-     backToCameraBtn.addEventListener('click', () => {
-         hideSpinner();
-         hideReviewButtons();
-         startCamera('camera');
- 
-         // Показываем nav-button
-         document.querySelector('.nav-tabs').classList.remove('hidden');
- 
-         // Возвращаем отображение captureButton
-         captureButton.classList.remove('hidden');
-         captureButton.disabled = false;
-         captureButton.style.display = 'block';
-     });
+    backToCameraBtn.addEventListener('click', () => {
+    hideSpinner();
+    hideReviewButtons();
+
+    // Сбрасываем флаг и состояние
+    photoTaken = false;
+    resetCameraView();
+
+    // Возвращаем камеру
+    startCamera('camera');
+
+    // Показываем навигацию снизу
+    document.querySelector('.nav-tabs').classList.remove('hidden');
+    });
  }
  
  let reviewHandlerAttached = false;
@@ -536,18 +533,19 @@ async function sendSessionData() {
      );
  });
  
- captureButton.addEventListener('click', () => {
-     const croppedPhoto = captureAndCropPhoto(video, canvas);
-     stopCamera();
-     canvas.style.display = 'block';
-     video.style.display = 'none';
-     captureButton.style.display = 'none';
- 
-     // Скрываем nav-button
-     document.querySelector('.nav-tabs').classList.add('hidden');
-     
-     showReviewButtons();
- });
+captureButton.addEventListener('click', async () => {
+  photoTaken = true;
+  // Скрываем навигацию
+  document.querySelector('.nav-tabs').classList.add('hidden');
+
+  const croppedPhoto = await captureAndCropPhoto(video, canvas);
+  canvas.style.display = 'block';
+  video.style.display = 'none';
+  // Скрываем кнопку
+  captureButton.classList.add('hidden');
+
+  showReviewButtons();
+});
  
  sessionCaptureButton.addEventListener('click', () => {
      const photoData = capturePhoto(sessionVideo, sessionCanvas);

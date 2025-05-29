@@ -202,10 +202,12 @@ body {
 }
 
 .camera-controls {
-    position: absolute;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
+  position: absolute;
+  bottom: 3.5rem; /* чуть выше nav-tabs */
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 1rem;
 }
 
 .capture-button {
