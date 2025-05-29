@@ -258,7 +258,8 @@ body  {
 
 
 .camera-controls  {
-
+    z-index: 9999;
+    pointer-events: auto;
     position: absolute;
     bottom: 2rem;
     left: 50%;
@@ -267,9 +268,10 @@ body  {
 
 
 .capture-button  {
-
+    z-index: 9999;
     width: 4.5rem;
     height: 4.5rem;
+    pointer-events: auto;
     border-radius: 50%;
     background: transparent;
     border: 4px solid white;
@@ -282,7 +284,7 @@ body  {
     justify-content: center;
     /* Центрируем по горизонтали */
     position: relative;
-    opacity: 0;
+    opacity: 1 !important;
 }
 
 
@@ -610,6 +612,14 @@ body  {
     animation: fadeIn 0.3s ease-in-out;
 }
 
+html, body {
+  touch-action: none; /* блокирует pinch и swipe */
+  overscroll-behavior: none;
+}
+
+canvas {
+  touch-action: pan-x pan-y; /* разрешает скролл, но запрещает zoom */
+}
 
 /* Верхний блок управления камерой */
 .camera-top-controls  {
