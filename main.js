@@ -1,3 +1,4 @@
+// main.js
 const webapp = window.Telegram.WebApp;
 webapp.ready();
 webapp.expand();
@@ -6,14 +7,17 @@ const initData = webapp.initData;
 const params = webapp.themeParams;
 const root = document.documentElement;
 
+// Устанавливаем тему из Telegram
 if (params) {
-  Object.entries(params).forEach(([key, val]) => {
-    const cssVar = `--tg-theme-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
-    root.style.setProperty(cssVar, val);
-  });
+  root.style.setProperty('--tg-theme-bg-color', params.bg_color);
+  root.style.setProperty('--tg-theme-text-color', params.text_color);
+  root.style.setProperty('--tg-theme-hint-color', params.hint_color);
+  root.style.setProperty('--tg-theme-link-color', params.link_color);
+  root.style.setProperty('--tg-theme-button-color', params.button_color);
+  root.style.setProperty('--tg-theme-button-text-color', params.button_text_color);
 }
 
-// DOM
+// Элементы DOM
 const navButtons           = document.querySelectorAll('.nav-button');
 const views                = document.querySelectorAll('.view');
 const locationButton       = document.getElementById('locationButton');
@@ -36,21 +40,21 @@ const flashButton          = document.getElementById('flashButton');
 const zoomSlider           = document.getElementById('zoomSlider');
 const zoomValue            = document.getElementById('zoomValue');
 
-let stream        = null;
-let videoTrack    = null;
-let currentZoom   = 1;
-let isTorchOn     = false;
-let photoTaken    = false;
-let sessionPhotos = [];
+let stream         = null;
+let videoTrack     = null;
+let currentZoom    = 1;
+let isTorchOn      = false;
+let photoTaken     = false;
+let sessionPhotos  = [];
 const REQUIRED_PHOTOS = 4;
 
-// Инициализируем карту
+// Инициализация карты
 const map = L.map('map').setView([51.505, -0.09], 13);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
-// Переключение видов
+// Универсальные функции
 function showError(msg) {
   errorMessage.textContent = msg;
   errorMessage.style.display = 'block';
@@ -63,10 +67,9 @@ function hideError() {
 function switchView(view) {
   hideError();
   navButtons.forEach(b => b.classList.toggle('active', b.dataset.view === view));
-  views.forEach(v => v.id === `${view}View`
-    ? v.classList.add('active')
-    : v.classList.remove('active')
-  );
+  views.forEach(v => {
+    v.id === `${view}View` ? v.classList.add('active') : v.classList.remove('active');
+  });
   document.querySelector('.nav-tabs').classList.remove('hidden');
 
   if (view === 'camera' || view === 'session') {
@@ -74,18 +77,15 @@ function switchView(view) {
   } else {
     stopCamera();
   }
-
-  if (view === 'session') {
-    updateSessionUI();
-  }
+  if (view === 'session') updateSessionUI();
 }
 
-// Запускаем приложение
+// Запуск приложения
 if (!initData) {
   document.querySelector('.container').classList.add('hidden');
   document.getElementById('forbiddenPage').classList.remove('hidden');
 } else {
-  initApp();    // ваша реализация
+  initApp();
   switchView('map');
 }
 
@@ -95,7 +95,7 @@ async function startCamera(view) {
   if (photoTaken) resetCameraView();
 
   const videoEl   = view === 'session' ? sessionVideo : video;
-  const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
+  const captureBtn= view === 'session' ? sessionCaptureButton : captureButton;
 
   try {
     stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
@@ -117,14 +117,13 @@ function stopCamera() {
   stream.getTracks().forEach(t => t.stop());
   stream = null;
   videoTrack = null;
-
   [video, sessionVideo].forEach(v => v.srcObject = null);
-  [captureButton, sessionCaptureButton].forEach(btn => btn.disabled = true);
+  [captureButton, sessionCaptureButton].forEach(b => b.disabled = true);
 }
 
 function resetCameraView() {
   photoTaken = false;
-  video.style.display = 'block';
+  video.style.display  = 'block';
   canvas.style.display = 'none';
   captureButton.classList.remove('hidden');
   captureButton.disabled = false;
@@ -133,26 +132,26 @@ function resetCameraView() {
 function setupZoomAndTorch() {
   const cap = videoTrack.getCapabilities();
 
-  // Zoom
+  // Зум
   if (cap.zoom) {
-    zoomSlider.min = cap.zoom.min;
-    zoomSlider.max = cap.zoom.max;
-    zoomSlider.step = 0.01;
+    zoomSlider.min   = cap.zoom.min;
+    zoomSlider.max   = cap.zoom.max;
+    zoomSlider.step  = 0.01;
     zoomSlider.value = currentZoom;
     zoomValue.textContent = `${currentZoom.toFixed(2)}x`;
     zoomSlider.style.display = 'block';
-    zoomValue.style.display = 'block';
+    zoomValue.style.display  = 'block';
 
     zoomSlider.oninput = async () => {
       currentZoom = parseFloat(zoomSlider.value);
       zoomValue.textContent = `${currentZoom.toFixed(2)}x`;
       try {
         await videoTrack.applyConstraints({ advanced: [{ zoom: currentZoom }] });
-      } catch (_) {}
+      } catch {}
     };
   }
 
-  // Torch
+  // Фонарик
   if (cap.torch) {
     flashButton.style.display = 'block';
     flashButton.onclick = async () => {
@@ -167,7 +166,7 @@ function setupZoomAndTorch() {
   }
 }
 
-// Снимок фото + обрезка
+// Захват фото
 function captureAndCropPhoto(v, c) {
   const ctx = c.getContext('2d');
   const w   = v.videoWidth;
@@ -188,332 +187,287 @@ function captureAndCropPhoto(v, c) {
 
 function capturePhoto(v, c) {
   const ctx = c.getContext('2d');
-  const w   = v.videoWidth;
-  const h   = v.videoHeight;
-
-  c.width  = w;
-  c.height = h;
-  ctx.drawImage(v, 0, 0, w, h);
-
+  c.width  = v.videoWidth;
+  c.height = v.videoHeight;
+  ctx.drawImage(v, 0, 0, c.width, c.height);
   return c.toDataURL('image/jpeg');
 }
 
-// События захвата и возврата
+// Кнопки
 captureButton.addEventListener('click', () => {
   photoTaken = true;
-  const data = captureAndCropPhoto(video, canvas);
-  video.style.display    = 'none';
-  canvas.style.display   = 'block';
+  const img = captureAndCropPhoto(video, canvas);
+  video.style.display = 'none';
+  canvas.style.display = 'block';
   captureButton.classList.add('hidden');
   document.querySelector('.nav-tabs').classList.add('hidden');
-  showReviewButtons(); // ваша реализация
+  showReviewButtons();
 });
 
 sessionCaptureButton.addEventListener('click', () => {
   const photo = capturePhoto(sessionVideo, sessionCanvas);
-  if (sessionPhotos.length < REQUIRED_PHOTOS) {
-    sessionPhotos.push(photo);
-  }
-  updateSessionUI(); // ваша реализация
+  if (sessionPhotos.length < REQUIRED_PHOTOS) sessionPhotos.push(photo);
+  updateSessionUI();
   if (sessionPhotos.length === REQUIRED_PHOTOS) {
-    sendSessionData(); // ваша реализация
+    sendSessionData();
   } else {
     setTimeout(() => startCamera('session'), 500);
   }
 });
 
 backToCameraBtn.addEventListener('click', () => {
-  hideSpinner();           // ваша реализация
-  hideReviewButtons();     // ваша реализация
+  hideSpinner();
+  hideReviewButtons();
   photoTaken = false;
   resetCameraView();
   startCamera('camera');
   document.querySelector('.nav-tabs').classList.remove('hidden');
 });
 
-// Остальные функции: updateSessionUI, sendSessionData, initApp и т.п.
+// Опрос и переход к просмотру фото
+continueButton.addEventListener('click', () => switchView('camera'));
 
- 
- let reviewHandlerAttached = false;
- 
- function showReviewButtons() {
-     const btn = document.getElementById('submitOdometerPhoto');
- 
-     if (!reviewHandlerAttached) {
-         btn.addEventListener('click', handleSubmitPhoto);
-         reviewHandlerAttached = true;
-     }
- 
-     document.getElementById('reviewButtons').classList.remove('hidden');
- }
- 
- 
- let recognizedOdometer = null;
- let lastOdometerPhoto = null;
- let lastRecognizedOdometerPhoto = null; 
- 
- async function uploadOdometerPhoto(base64Photo, recognizedPhotoBase64, carId, odometerValue, initData) {
-    try {
-      const response = await fetch("https://autopark-gthost.amvera.io/api/odometer", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `tma ${initData}`
-        },
-        body: JSON.stringify({
-          photo: base64Photo,
-          recognized_photo: recognizedPhotoBase64 || null,
-          car_id: carId,
-          odometer_value: odometerValue || null
-        })
-      });
-  
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.detail || "Failed to upload odometer photo");
-  
-      console.log("📸 Фото успешно загружено:", result);
-      return result;
-    } catch (error) {
-      console.error("❌ Ошибка загрузки фото одометра:", error);
-      return null;
+odometer.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    if (!odometer.value) {
+      showError('Пожалуйста, введите показания одометра');
+      return;
     }
-  }  
- 
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+      Telegram.WebApp.HapticFeedback.impactOccurred('light');
+    }
+    switchView('session');
+  }
+});
+
+// Сессия фотографий
+function updateSessionUI() {
+  photoCounter.innerHTML = '';
+  sessionPhotos.forEach((src, i) => {
+    const slot = document.createElement('div');
+    slot.className = `photo-slot-mini ${src ? 'filled' : 'empty'}`;
+    if (src) {
+      const img = document.createElement('img');
+      img.src = src;
+      slot.appendChild(img);
+    } else {
+      slot.textContent = i + 1;
+    }
+    photoCounter.appendChild(slot);
+  });
+}
+
+// Загрузка одометра
+async function uploadOdometerPhoto(base64Photo, recognizedPhotoBase64, carId, odometerValue, initData) {
+  try {
+    const response = await fetch("https://autopark-gthost.amvera.io/api/odometer", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `tma ${initData}`
+      },
+      body: JSON.stringify({
+        photo: base64Photo,
+        recognized_photo: recognizedPhotoBase64 || null,
+        car_id: carId,
+        odometer_value: odometerValue || null
+      })
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.detail || "Failed to upload odometer photo");
+    console.log("📸 Фото успешно загружено:", result);
+    return result;
+  } catch (error) {
+    console.error("❌ Ошибка загрузки фото одометра:", error);
+    return null;
+  }
+}
 
 async function handleSubmitPhoto() {
-    showSpinner();
-
-    try {
-        if (canvas.width === 0 || canvas.height === 0) {
-            hideSpinner();
-            return;
-        }
-
-        const base64image = canvas.toDataURL('image/jpeg');
-        lastOdometerPhoto = base64image;
-
-        // Только распознаем одометр, не сохраняем в S3
-        const res = await fetch('https://autopark-gthost.amvera.io/api/odometer/recognize', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `tma ${initData}`
-            },
-            body: JSON.stringify({
-                photo: base64image,
-                car_id: Number(carId),
-                action: action
-            }),
-        });
-
-        const result = await res.json();
-
-        if (res.ok) {
-            if (result.status === 'ok') {
-                recognizedOdometer = result.odometer;
-                showCheckmark();
-                setTimeout(() => {
-                    switchView('session');
-                }, 1000);
-            } else if (result.status === 'processing') {
-                alert("Не удалось распознать значение");
-                switchView('camera');
-                document.getElementById('reviewButtons').classList.add('hidden');
-            }
-        } else {
-            console.error("Ошибка при запросе: ", result);
-        }
-    } catch (err) {
-        console.error("Ошибка запроса:", err);
-    } finally {
-        hideSpinner();
+  showSpinner();
+  try {
+    if (canvas.width === 0 || canvas.height === 0) {
+      hideSpinner();
+      return;
     }
-}
-
-
- async function notifyServer(eventPayload) {
-     const body = { chat_id: chatId, message_id: msgId, event: eventPayload, init_data: initData};
-     try {
-       const res = await fetch('https://autopark-gthost.amvera.io/api/webapp/callback', {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify(body),
-       });
-       const json = await res.json();
-       console.log('Callback response:', json);
-     } catch (err) {
-       console.error('Callback error:', err);
-       showError(err);
-       return;
-     }
-     // Только после того, как мы точно получили ответ:
-     setTimeout(() => webapp.close(), 100);
-   }
- 
-async function sendSessionData() {
-    if (!initData) {
-        showError('❌ Не удалось получить данные Telegram.');
-        return;
-    }
-
-    const marker = currentMarker?.getLatLng?.();
-    if (!marker) {
-        showError('❌ Координаты не выбраны.');
-        return;
-    }
-
-    const odo = Number(odometer.value);
-    if (isNaN(odo) || odo < 0) {
-        showError('❌ Пожалуйста, укажите корректный пробег.');
-        return;
-    }
-
-    if (sessionPhotos.length !== REQUIRED_PHOTOS) {
-        showError('❌ Необходимо 4 фото.');
-        return;
-    }
-
-    if (!lastOdometerPhoto) {
-        showError('❌ Отсутствует фото одометра.');
-        return;
-    }
-
-    const finalOdometer = recognizedOdometer !== null && recognizedOdometer !== undefined ? recognizedOdometer : odo;
-
-    const payload = {
+    const base64image = canvas.toDataURL('image/jpeg');
+    lastOdometerPhoto = base64image;
+    const res = await fetch('https://autopark-gthost.amvera.io/api/odometer/recognize', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `tma ${initData}`
+      },
+      body: JSON.stringify({
+        photo: base64image,
         car_id: Number(carId),
-        action,
-        latitude: marker.lat,
-        longitude: marker.lng,
-        odometer: finalOdometer,
-        photos: sessionPhotos,
-        odometer_photo: lastOdometerPhoto,
-        init_data: initData 
-    };
-
-    try {
-        const res = await fetch('https://autopark-gthost.amvera.io/api/report', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `tma ${initData}`
-            },
-            body: JSON.stringify(payload)
-        });
-
-        const result = await res.json();
-
-        if (res.ok && result.status === 'ok') {
-            await notifyServer({
-                event: action,
-                car_id: Number(carId)
-            });
-
-            showNotification(result.message || '✅ ОК');
-        } else {
-            const msg = result.detail || '❌ Ошибка при отправке';
-            showError(msg);
-        }
-    } catch (e) {
-        console.error(e);
-        showError('⚠️ Ошибка соединения с сервером');
-    }
-}
- 
- function showForbiddenError() {
-     document.querySelector('.container').classList.add('hidden');
-     document.getElementById('forbiddenPage').classList.remove('hidden');
- }
- 
- // 5. Event Listeners
- navButtons.forEach(button => {
-     button.addEventListener('click', () => {
-         const view = button.dataset.view;
-         switchView(view);
-     });
- });
- 
- map.on('click', e => createDraggableMarker(e.latlng));
- 
- locationButton.addEventListener('click', () => {
-     if (!navigator.geolocation) {
-         showError('Geolocation is not supported by your browser.');
-         return;
-     }
- 
-     navigator.geolocation.getCurrentPosition(
-         ({ coords }) => {
-             createDraggableMarker([coords.latitude, coords.longitude]);
-             map.setView([coords.latitude, coords.longitude], 15);
-         },
-         () => showError('Please enable location services to continue.')
-     );
- });
- 
- captureButton.addEventListener('click', () => {
-     const croppedPhoto = captureAndCropPhoto(video, canvas);
-     stopCamera();
-     canvas.style.display = 'block';
-     video.style.display = 'none';
-     captureButton.style.display = 'none';
- 
-     // Скрываем nav-button
-     document.querySelector('.nav-tabs').classList.add('hidden');
-     
-     showReviewButtons();
- });
- 
- sessionCaptureButton.addEventListener('click', () => {
-     const photoData = capturePhoto(sessionVideo, sessionCanvas);
-     if (sessionPhotos.length < REQUIRED_PHOTOS) {
-         sessionPhotos.push(photoData);
-     }
-     updateSessionUI();
- 
-     if (sessionPhotos.length === REQUIRED_PHOTOS) {
-         showNotification('📤 Отправка данных...');
-         setTimeout(() => sendSessionData(), 1000);
-     } else {
-         setTimeout(() => startCamera('session'), 500);
-     }
- });
- 
- continueButton.addEventListener('click', () => switchView('camera'));
- backButton.addEventListener('click', () => startCamera('camera'));
- 
- odometer.addEventListener('input', () => {
-     continueToPhotos.disabled = !odometer.value;
- });
- 
- continueToPhotos.addEventListener('click', () => {
-     if (odometer.value) switchView('session');
- });
- 
- // 6. Initialize Application
- function initApp() {
-    fetch(`https://autopark-gthost.amvera.io/api/auth?car_id=${carId}&action=${action}`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `tma ${initData}`
-        }
-    })
-    .then(res => {
-        if (res.status === 403) {
-            alert('⛔ У вас уже есть активная сессия. Завершите её прежде, чем начинать новую.');
-            setTimeout(() => webapp.close(), 100);
-            return;
-        }
-        return res.json();
-    })
-    .then(data => {
-        if (data?.status === 'ok') {
-            switchView('map'); 
-        }
-    })
-    .catch(err => {
-        console.error('Auth failed', err);
-        alert('Ошибка авторизации.');
-        alert(err);
-        setTimeout(() => webapp.close(), 2000);
+        action
+      }),
     });
+    const result = await res.json();
+    if (res.ok) {
+      if (result.status === 'ok') {
+        recognizedOdometer = result.odometer;
+        showCheckmark();
+        setTimeout(() => switchView('session'), 1000);
+      } else if (result.status === 'processing') {
+        alert("Не удалось распознать значение");
+        switchView('camera');
+        document.getElementById('reviewButtons').classList.add('hidden');
+      }
+    } else {
+      console.error("Ошибка при запросе: ", result);
+    }
+  } catch (err) {
+    console.error("Ошибка запроса:", err);
+  } finally {
+    hideSpinner();
+  }
 }
+
+// Отправка callback
+async function notifyServer(eventPayload) {
+  const body = { chat_id: chatId, message_id: msgId, event: eventPayload, init_data: initData };
+  try {
+    const res = await fetch('https://autopark-gthost.amvera.io/api/webapp/callback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    console.log('Callback response:', await res.json());
+  } catch (err) {
+    console.error('Callback error:', err);
+    showError(err);
+    return;
+  }
+  setTimeout(() => webapp.close(), 100);
+}
+
+// Отправка отчёта
+async function sendSessionData() {
+  if (!initData) {
+    showError('❌ Не удалось получить данные Telegram.');
+    return;
+  }
+  const marker = currentMarker?.getLatLng?.();
+  if (!marker) {
+    showError('❌ Координаты не выбраны.');
+    return;
+  }
+  const odo = Number(odometer.value);
+  if (isNaN(odo) || odo < 0) {
+    showError('❌ Пожалуйста, укажите корректный пробег.');
+    return;
+  }
+  if (sessionPhotos.length !== REQUIRED_PHOTOS) {
+    showError('❌ Необходимо 4 фото.');
+    return;
+  }
+  if (!lastOdometerPhoto) {
+    showError('❌ Отсутствует фото одометра.');
+    return;
+  }
+  const finalOdometer = recognizedOdometer ?? odo;
+  const payload = {
+    car_id: Number(carId),
+    action,
+    latitude: marker.lat,
+    longitude: marker.lng,
+    odometer: finalOdometer,
+    photos: sessionPhotos,
+    odometer_photo: lastOdometerPhoto,
+    init_data: initData
+  };
+  try {
+    const res = await fetch('https://autopark-gthost.amvera.io/api/report', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `tma ${initData}`
+      },
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+    if (res.ok && result.status === 'ok') {
+      await notifyServer({ event: action, car_id: Number(carId) });
+      showNotification(result.message || '✅ ОК');
+    } else {
+      showError(result.detail || '❌ Ошибка при отправке');
+    }
+  } catch (e) {
+    console.error(e);
+    showError('⚠️ Ошибка соединения с сервером');
+  }
+}
+
+// UI: спиннер и галочка
+function showSpinner() {
+  const el = document.getElementById('photoStatus');
+  el.classList.remove('hidden', 'check');
+  el.querySelector('.spinner').style.display = 'block';
+}
+function hideSpinner() {
+  document.getElementById('photoStatus').classList.add('hidden');
+}
+function showCheckmark() {
+  const el = document.getElementById('photoStatus');
+  el.classList.add('check');
+  el.querySelector('.spinner').style.display = 'none';
+}
+
+// Управление кнопками ревью
+let reviewHandlerAttached = false;
+function showReviewButtons() {
+  const btn = document.getElementById('submitOdometerPhoto');
+  if (!reviewHandlerAttached) {
+    btn.addEventListener('click', handleSubmitPhoto);
+    reviewHandlerAttached = true;
+  }
+  document.getElementById('reviewButtons').classList.remove('hidden');
+}
+function hideReviewButtons() {
+  document.getElementById('reviewButtons').classList.add('hidden');
+}
+
+// Инициализация сессии
+function initApp() {
+  fetch(`https://autopark-gthost.amvera.io/api/auth?car_id=${carId}&action=${action}`, {
+    method: 'POST',
+    headers: { 'Authorization': `tma ${initData}` }
+  })
+  .then(res => {
+    if (res.status === 403) {
+      alert('⛔ У вас уже есть активная сессия. Завершите её прежде, чем начинать новую.');
+      setTimeout(() => webapp.close(), 100);
+      return;
+    }
+    return res.json();
+  })
+  .then(data => {
+    if (data?.status === 'ok') switchView('map');
+  })
+  .catch(err => {
+    console.error('Auth failed', err);
+    alert('Ошибка авторизации.');
+    setTimeout(() => webapp.close(), 2000);
+  });
+}
+
+// Обработчики навигации и геолокации
+navButtons.forEach(button => {
+  button.addEventListener('click', () => switchView(button.dataset.view));
+});
+map.on('click', e => {
+  createDraggableMarker(e.latlng);
+});
+locationButton.addEventListener('click', () => {
+  if (!navigator.geolocation) return showError('Geolocation is not supported.');
+  navigator.geolocation.getCurrentPosition(
+    ({ coords }) => {
+      createDraggableMarker([coords.latitude, coords.longitude]);
+      map.setView([coords.latitude, coords.longitude], 15);
+    },
+    () => showError('Please enable location services.')
+  );
+});
