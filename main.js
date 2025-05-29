@@ -40,7 +40,13 @@ const webapp = window.Telegram.WebApp;
  const chatId = urlParams.get('chat_id');
  const msgId  = urlParams.get('msg_id');
  const carId  = urlParams.get('car_id');
- 
+ const flashButton = document.getElementById('flashButton');
+const zoomSlider = document.getElementById('zoomSlider');
+const zoomValue = document.getElementById('zoomValue');
+let videoTrack = null;
+let currentZoom = 1;
+let isTorchOn = false;
+
  const action = urlParams.get('action') || 'start';
  
  let currentMarker = null;
@@ -121,7 +127,28 @@ const webapp = window.Telegram.WebApp;
      const videoElement = view === 'session' ? sessionVideo : video;
      const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
      const canvasEl = view === 'session' ? sessionCanvas : canvas;
- 
+     videoTrack = stream.getVideoTracks()[0];
+
+    // Зум
+    if (videoTrack && videoTrack.getCapabilities().zoom) {
+        zoomSlider.min = videoTrack.getCapabilities().zoom.min || 1;
+        zoomSlider.max = videoTrack.getCapabilities().zoom.max || 4;
+        zoomSlider.step = videoTrack.getCapabilities().zoom.step || 0.1;
+        zoomSlider.value = videoTrack.getSettings().zoom || 1;
+        currentZoom = zoomSlider.value;
+        zoomSlider.style.display = '';
+        zoomValue.style.display = '';
+    } else {
+        zoomSlider.style.display = 'none';
+        zoomValue.style.display = 'none';
+    }
+    // Torch (фонарик)
+    if (videoTrack && videoTrack.getCapabilities().torch) {
+        flashButton.style.display = '';
+    } else {
+        flashButton.style.display = 'none';
+    }
+
      if (stream) stopCamera(); // 💡 предотвращаем повторный вызов
  
      if (photoTaken) resetCameraView(); // 💡 возможно, сделать reset по view
@@ -195,21 +222,23 @@ const webapp = window.Telegram.WebApp;
 }
  
  function captureAndCropPhoto(video, canvas) {
-     const ctx = canvas.getContext('2d');
-     const width = video.videoWidth;
-     const height = video.videoHeight;
- 
-     const cropWidth = width; // например, 80% от ширины
-     const cropHeight = height; // например, центр экрана
-     const cropX = (width - cropWidth) / 2;
-     const cropY = (height - cropHeight) / 2;
- 
-     canvas.width = cropWidth;
-     canvas.height = cropHeight;
-     ctx.drawImage(video, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
- 
-     return canvas.toDataURL('image/jpeg');
- }
+    const ctx = canvas.getContext('2d');
+    const width = video.videoWidth;
+    const height = video.videoHeight;
+
+    // Кроп по центру в зависимости от зума
+    const zoom = parseFloat(currentZoom) || 1;
+    const cropWidth = width / zoom;
+    const cropHeight = height / zoom;
+    const cropX = (width - cropWidth) / 2;
+    const cropY = (height - cropHeight) / 2;
+
+    canvas.width = cropWidth;
+    canvas.height = cropHeight;
+    ctx.drawImage(video, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+
+    return canvas.toDataURL('image/jpeg');
+}
  
  
  function updateSessionUI() {
@@ -536,6 +565,31 @@ async function sendSessionData() {
  continueToPhotos.addEventListener('click', () => {
      if (odometer.value) switchView('session');
  });
+
+ zoomSlider.addEventListener('input', async () => {
+    currentZoom = parseFloat(zoomSlider.value);
+    zoomValue.textContent = currentZoom + 'x';
+    if (videoTrack) {
+        try {
+            await videoTrack.applyConstraints({ advanced: [{ zoom: currentZoom }] });
+        } catch (e) {
+            // На некоторых устройствах не поддерживается
+        }
+    }
+});
+
+flashButton.addEventListener('click', async () => {
+    if (videoTrack && videoTrack.getCapabilities().torch) {
+        isTorchOn = !isTorchOn;
+        try {
+            await videoTrack.applyConstraints({ advanced: [{ torch: isTorchOn }] });
+            flashButton.style.background = isTorchOn ? '#ffd900' : 'var(--tg-theme-button-color)';
+        } catch (e) {
+            alert('Фонарик не поддерживается этим устройством');
+        }
+    }
+});
+
  
  // 6. Initialize Application
  function initApp() {
