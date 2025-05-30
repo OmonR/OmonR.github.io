@@ -499,36 +499,21 @@ async function sendSessionData() {
  
  map.on('click', e => createDraggableMarker(e.latlng));
  
-locationButton.addEventListener('click', () => {
-    if (!navigator.geolocation) {
-        alert('Ваше устройство не поддерживает геолокацию.');
-        return;
-    }
+ locationButton.addEventListener('click', () => {
+     if (!navigator.geolocation) {
+         alert('Геолокация блокируется устройством или прииложенем');
+         return;
+     }
+ 
+     navigator.geolocation.getCurrentPosition(
+         ({ coords }) => {
+             createDraggableMarker([coords.latitude, coords.longitude]);
+             map.setView([coords.latitude, coords.longitude], 15);
+         },
+         () => alert('Геолокация блокируется устройством или прииложенем')
+     );
+ });
 
-    navigator.geolocation.getCurrentPosition(
-        ({ coords }) => {
-            createDraggableMarker([coords.latitude, coords.longitude]);
-            map.setView([coords.latitude, coords.longitude], 15);
-        },
-        (err) => {
-            // Проверка отказа в доступе
-            if (err.code === 1) {
-                alert('Геолокация отключена на устройстве или запрещена для Telegram. Включите геолокацию в настройках.');
-            } else if (err.code === 2) {
-                alert('Геопозиция недоступна. Возможно, отключён GPS.');
-            } else if (err.code === 3) {
-                alert('Время ожидания геолокации истекло. Попробуйте снова.');
-            } else {
-                alert('Ошибка получения геолокации: ' + err.message);
-            }
-        },
-        {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
-        }
-    );
-});
  
  captureButton.addEventListener('click', () => {
      const croppedPhoto = captureAndCropPhoto(video, canvas);
@@ -593,7 +578,6 @@ locationButton.addEventListener('click', () => {
     .catch(err => {
         console.error('Auth failed', err);
         alert('Ошибка авторизации.');
-        alert(err);
         setTimeout(() => webapp.close(), 2000);
     });
 }
