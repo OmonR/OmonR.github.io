@@ -79,15 +79,14 @@
             </div>
             <div class="camera-container">
                 <video id="sessionVideo" autoplay playsinline></video>
+                <div id="tapToStartOverlay" class="tap-overlay hidden">
+                Убедитесь что автомобиль хорошо видно
+                </div>
                 <canvas id="sessionCanvas"></canvas>
                 <div class="camera-controls">
                     <button id="sessionCaptureButton" class="capture-button">
                         <div class="capture-button-inner"></div>
                     </button>
-                    <div id="tapToStartOverlay" class="tap-overlay hidden">
-                    Убедитесь, что автомобиль хорошо видно<br>
-                    <span class="continue-text">Продолжить</span>
-                    </div>
                 </div>
             </div>
         </div>

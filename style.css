@@ -226,6 +226,7 @@ body {
     /* Центрируем по горизонтали */
     position: relative;
     opacity: 0;
+    z-index: 9999;
 }
 
 .continue-button {
@@ -250,6 +251,7 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    z-index: 9999;
 
 }
 
@@ -490,7 +492,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 9999;
+  z-index: 1001;
   background-color: rgba(255, 255, 255, 0.8);
   color: #000;
   font-size: 18px;
