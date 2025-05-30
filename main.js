@@ -561,6 +561,26 @@ async function sendSessionData() {
         }
     });
 
+setTimeout(() => {
+  const btn = document.getElementById('sessionCaptureButton');
+  if (!btn) {
+    alert('[DEBUG] sessionCaptureButton не найден');
+    return;
+  }
+
+  alert('[DEBUG] sessionCaptureButton найден, добавим временный слушатель');
+
+  btn.style.outline = '3px solid red'; // визуальный отладочный маркер
+
+  btn.addEventListener('click', () => {
+    alert('[DEBUG] Нажатие по sessionCaptureButton сработало');
+  });
+
+  // Проверка computed styles
+  const style = window.getComputedStyle(btn);
+  alert('[DEBUG] Стили кнопки: display=' + style.display + ', visibility=' + style.visibility + ', opacity=' + style.opacity + ', pointer-events=' + style.pointerEvents + ', z-index=' + style.zIndex);
+
+}, 3000); // Ждём прогрузки DOM и смены view
  
  continueButton.addEventListener('click', () => switchView('camera'));
  backButton.addEventListener('click', () => startCamera('camera'));
