@@ -78,8 +78,7 @@ const webapp = window.Telegram.WebApp;
      errorMessage.textContent = message;
      errorMessage.style.display = 'block';
  }
-
-
+ 
  function switchView(view) {
      hideSpinner();
      navButtons.forEach(btn => {
@@ -118,65 +117,47 @@ const webapp = window.Telegram.WebApp;
      continueButton.classList.remove('hidden');
  }
  
-async function startCamera(view) {
-    const videoElement = view === 'session' ? sessionVideo : video;
-    const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
-    const canvasEl = view === 'session' ? sessionCanvas : canvas;
-
-    if (stream) stopCamera();
-
-    if (photoTaken) resetCameraView();
-
-    // Показать зум-слайдер и фонарик
-    const zoomSlider = document.getElementById('zoomSlider');
-    zoomSlider.style.display = 'block';
-    document.querySelector('.spotlight-mask').style.display = 'block';
-
-    // Добавляем обработчик зума один раз
-    if (!zoomSlider.dataset.listenerAdded) {
-        zoomSlider.addEventListener('input', (e) => {
-            const zoom = parseFloat(e.target.value);
-            videoElement.style.transform = `scale(${zoom})`;
-        });
-        zoomSlider.dataset.listenerAdded = 'true';
-    }
-
-    // Маска фонарика (спотлайт)
-    const spotlightMask = document.getElementById('spotlightMask');
-    if (!spotlightMask.dataset.listenerAdded) {
-        document.addEventListener('mousemove', (e) => {
-            spotlightMask.style.background = `radial-gradient(circle at ${e.clientX}px ${e.clientY}px, transparent 100px, rgba(0,0,0,0.6) 200px)`;
-        });
-        spotlightMask.dataset.listenerAdded = 'true';
-    }
-
-    try {
-        stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'environment' }
-        });
-
-        videoElement.srcObject = stream;
-
-        await videoElement.play().catch(err => {
-            console.warn('Auto-play error:', err);
-        });
-
-        videoElement.style.display = 'block';
-        canvasEl.style.display = 'none';
-
-        captureBtn.classList.remove('hidden');
-        captureBtn.disabled = false;
-        captureBtn.style.opacity = '1';
-        captureBtn.style.pointerEvents = 'auto';
-        captureBtn.style.display = 'block';
-
-    } catch (err) {
-        console.error('Camera error:', err);
-        alert("Не удалось получить доступ к камере. Разрешите доступ и попробуйте снова.");
-        captureBtn.disabled = true;
-    }
-
-}
+ async function startCamera(view) {
+     const videoElement = view === 'session' ? sessionVideo : video;
+     const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
+     const canvasEl = view === 'session' ? sessionCanvas : canvas;
+ 
+     if (stream) stopCamera(); // 💡 предотвращаем повторный вызов
+ 
+     if (photoTaken) resetCameraView(); // 💡 возможно, сделать reset по view
+ 
+     try {
+         stream = await navigator.mediaDevices.getUserMedia({
+             video: { facingMode: 'environment' }
+         });
+         videoElement.srcObject = stream;
+ 
+         await videoElement.play().catch(err => {
+             console.warn('Auto-play error:', err);
+         });
+ 
+         if (view === 'camera') {
+             captureButton.classList.remove('hidden');
+             captureButton.style.opacity = '1';
+             captureButton.style.display = '';
+             captureButton.disabled = false;
+         }
+ 
+         if (view === 'session') {
+             sessionCaptureButton.disabled = false;
+             sessionCaptureButton.classList.remove('hidden');
+             sessionCaptureButton.style.opacity = '1';
+             sessionCaptureButton.style.display = 'block';
+         }
+ 
+         videoElement.style.display = 'block';
+         canvasEl.style.display = 'none';
+     } catch (err) {
+         console.error('Camera error:', err);
+         showError('Не удалось получить доступ к камере. Разрешите доступ и попробуйте снова.');
+         captureBtn.disabled = true;
+     }
+ }
  
  function stopCamera() {
      if (stream) {
@@ -545,14 +526,7 @@ async function sendSessionData() {
      }
  });
  
- continueButton.addEventListener('click', () => {
-    continueButton.disabled = true;
-    setTimeout(() => {
-        switchView('camera');
-        continueButton.disabled = false;
-    }, 100); // может быть и 200 мс
-});
-
+ continueButton.addEventListener('click', () => switchView('camera'));
  backButton.addEventListener('click', () => startCamera('camera'));
  
  odometer.addEventListener('input', () => {
