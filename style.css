@@ -100,7 +100,7 @@ body {
     bottom: 0;
     right: 0;
     height: 1rem;
-    background-color: var(--tg-theme-bg-color);
+    background-color: white;
     width: 100%;
     z-index: 100;
 }
