@@ -127,14 +127,23 @@ const webapp = window.Telegram.WebApp;
      if (photoTaken) resetCameraView(); // 💡 возможно, сделать reset по view
  
      try {
-         stream = await navigator.mediaDevices.getUserMedia({
-             video: { facingMode: 'environment' }
-         });
-         videoElement.srcObject = stream;
- 
-         await videoElement.play().catch(err => {
-             console.warn('Auto-play error:', err);
-         });
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        videoElement.srcObject = stream;
+
+        const isReady = await new Promise(resolve => {
+        const timeout = setTimeout(() => resolve(false), 3000);
+        videoElement.onloadeddata = () => {
+            clearTimeout(timeout);
+            resolve(true);
+        };
+        });
+
+        if (!isReady) {
+        showError("Камера не ответила. Перезагрузите страницу.");
+        return;
+        }
+
+        await videoElement.play();
  
          if (view === 'camera') {
              captureButton.classList.remove('hidden');
@@ -505,7 +514,6 @@ async function sendSessionData() {
      video.style.display = 'none';
      captureButton.style.display = 'none';
  
-     // Скрываем nav-button
      document.querySelector('.nav-tabs').classList.add('hidden');
      
      showReviewButtons();
