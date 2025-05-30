@@ -116,6 +116,8 @@ const webapp = window.Telegram.WebApp;
      currentMarker = L.marker(latlng, { draggable: true }).addTo(map);
      continueButton.classList.remove('hidden');
  }
+
+ const isAndroid = /Android/i.test(navigator.userAgent);
  
  async function startCamera(view) {
      const videoElement = view === 'session' ? sessionVideo : video;
@@ -143,12 +145,26 @@ const webapp = window.Telegram.WebApp;
              captureButton.disabled = false;
          }
  
-         if (view === 'session') {
-             sessionCaptureButton.disabled = false;
-             sessionCaptureButton.classList.remove('hidden');
-             sessionCaptureButton.style.opacity = '1';
-             sessionCaptureButton.style.display = 'block';
-         }
+        if (view === 'session' && isAndroid) {
+            const overlay = document.getElementById('tapToStartOverlay');
+            overlay.classList.remove('hidden');
+
+            overlay.addEventListener('click', async () => {
+                overlay.classList.add('hidden');
+                try {
+                    await videoElement.play();
+                } catch (err) {
+                    console.warn('User-triggered play failed:', err);
+                    showError('Ошибка запуска камеры. Попробуйте ещё раз.');
+                }
+            }, { once: true });
+
+            return; // выходим, ждём тапа
+        } else {
+            await videoElement.play().catch(err => {
+                console.warn('Auto-play error:', err);
+            });
+        }
  
          videoElement.style.display = 'block';
          canvasEl.style.display = 'none';
