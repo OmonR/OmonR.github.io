@@ -501,7 +501,7 @@ async function sendSessionData() {
  
  locationButton.addEventListener('click', () => {
      if (!navigator.geolocation) {
-         showError('Geolocation is not supported by your browser.');
+         alert('Геолокация блокируется устройством или прииложенем');
          return;
      }
  
@@ -510,7 +510,7 @@ async function sendSessionData() {
              createDraggableMarker([coords.latitude, coords.longitude]);
              map.setView([coords.latitude, coords.longitude], 15);
          },
-         () => showError('Please enable location services to continue.')
+         () => alert('Геолокация блокируется устройством или прииложенем')
      );
  });
  
