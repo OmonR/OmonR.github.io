@@ -122,7 +122,7 @@ async function startCamera(view) {
     const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
     const canvasEl = view === 'session' ? sessionCanvas : canvas;
 
-    if (stream) stopCamera(); // отключаем предыдущий поток
+    if (stream) stopCamera(); 
 
     if (photoTaken) resetCameraView();
 
@@ -132,16 +132,14 @@ async function startCamera(view) {
         });
 
         videoElement.srcObject = stream;
-        videoElement.style.display = 'block'; // обязательно видимым ДО play()
+        videoElement.style.display = 'block'; // 
 
-        // Пробуем запустить видео
         try {
             await videoElement.play();
         } catch (err) {
-            alert(err);
+            alert("err:", err); //почему вызывается этот блок на первом фото?
         }
 
-        // Ждём, пока видео станет готово (videoWidth > 0)
         const isReady = await new Promise(resolve => {
             const timeout = setTimeout(() => resolve(false), 3000);
             const checkReady = () => {
@@ -159,6 +157,9 @@ async function startCamera(view) {
             showError("Камера не загрузилась. Попробуйте ещё раз.");
             return;
         }
+
+        // Дать камере 1–2 кадра "прокашляться"
+        await new Promise(resolve => setTimeout(resolve, 300));
 
         // Показываем нужную кнопку
         if (view === 'camera') {
