@@ -126,9 +126,6 @@ async function startCamera(view) {
     const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
     const canvasEl = view === 'session' ? sessionCanvas : canvas;
 
-    if (stream) stopCamera();
-    if (photoTaken) resetCameraView();
-
     try {
         stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: 'environment' }
@@ -504,7 +501,7 @@ async function sendSessionData() {
  
 locationButton.addEventListener('click', () => {
     if (!navigator.geolocation) {
-        alert('Геолокация не поддерживается устройством.');
+        alert('Ваше устройство не поддерживает геолокацию.');
         return;
     }
 
@@ -514,15 +511,15 @@ locationButton.addEventListener('click', () => {
             map.setView([coords.latitude, coords.longitude], 15);
         },
         (err) => {
-            console.warn('Geolocation error:', err);
-            if (err.code === err.PERMISSION_DENIED) {
-                alert('⛔ Доступ к геолокации запрещён. Проверьте настройки приложения или браузера.');
-            } else if (err.code === err.POSITION_UNAVAILABLE) {
-                alert('⚠️ Геопозиция недоступна. Попробуйте позже.');
-            } else if (err.code === err.TIMEOUT) {
-                alert('⌛ Время ожидания геолокации истекло.');
+            // Проверка отказа в доступе
+            if (err.code === 1) {
+                alert('Геолокация отключена на устройстве или запрещена для Telegram. Включите геолокацию в настройках.');
+            } else if (err.code === 2) {
+                alert('Геопозиция недоступна. Возможно, отключён GPS.');
+            } else if (err.code === 3) {
+                alert('Время ожидания геолокации истекло. Попробуйте снова.');
             } else {
-                alert('❌ Не удалось получить геолокацию.');
+                alert('Ошибка получения геолокации: ' + err.message);
             }
         },
         {
