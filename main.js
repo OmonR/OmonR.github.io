@@ -137,7 +137,7 @@ async function startCamera(view) {
         try {
             await videoElement.play();
         } catch (err) {
-            alert(`err: ${err}`); //почему вызывается этот блок на первом фото?
+            console.log(log) //почему вызывается этот блок на первом фото?
         }
 
         const isReady = await new Promise(resolve => {
@@ -551,7 +551,10 @@ async function sendSessionData() {
      }
  });
  
- continueButton.addEventListener('click', () => switchView('camera'));
+ continueButton.addEventListener('click', () => {
+        switchView('camera');
+        startCamera('camera'); // 👈 вручную, в том же обработчике — будет считаться user gesture
+    });
  backButton.addEventListener('click', () => startCamera('camera'));
  
  odometer.addEventListener('input', () => {
@@ -586,7 +589,6 @@ async function sendSessionData() {
     .catch(err => {
         console.error('Auth failed', err);
         alert('Ошибка авторизации.');
-        alert(err);
         setTimeout(() => webapp.close(), 2000);
     });
 }
