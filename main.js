@@ -119,65 +119,65 @@ const webapp = window.Telegram.WebApp;
 
  const isAndroid = /Android/i.test(navigator.userAgent);
  
- async function startCamera(view) {
-     const videoElement = view === 'session' ? sessionVideo : video;
-     const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
-     const canvasEl = view === 'session' ? sessionCanvas : canvas;
- 
-     if (stream) stopCamera(); // 💡 предотвращаем повторный вызов
- 
-     if (photoTaken) resetCameraView(); // 💡 возможно, сделать reset по view
- 
-     try {
-         stream = await navigator.mediaDevices.getUserMedia({
-             video: { facingMode: 'environment' }
-         });
-         videoElement.srcObject = stream;
- 
-         await videoElement.play().catch(err => {
-             console.warn('Auto-play error:', err);
-         });
- 
-         if (view === 'camera') {
-             captureButton.classList.remove('hidden');
-             captureButton.style.opacity = '1';
-             captureButton.style.display = '';
-             captureButton.disabled = false;
-         }
- 
-        if (view === 'session' && isAndroid) {
+let hasTappedToStart = false;
+
+async function startCamera(view) {
+    const videoElement = view === 'session' ? sessionVideo : video;
+    const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
+    const canvasEl = view === 'session' ? sessionCanvas : canvas;
+
+    if (stream) stopCamera();
+    if (photoTaken) resetCameraView();
+
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment' }
+        });
+        videoElement.srcObject = stream;
+
+        if (view === 'session' && isAndroid && !hasTappedToStart) {
             const overlay = document.getElementById('tapToStartOverlay');
             overlay.classList.remove('hidden');
 
             overlay.addEventListener('click', async () => {
                 overlay.classList.add('hidden');
+                hasTappedToStart = true;
+
                 try {
                     await videoElement.play();
-                    sessionCaptureButton.classList.remove('hidden');
-                    sessionCaptureButton.disabled = false;
-                    sessionCaptureButton.style.opacity = '1';
+                    enableCaptureButton(view);
                 } catch (err) {
                     console.warn('User-triggered play failed:', err);
                     showError('Ошибка запуска камеры. Попробуйте ещё раз.');
                 }
             }, { once: true });
 
-            return; // выходим, ждём тапа
+            return; // Android: ждём пользовательский тап
         } else {
             await videoElement.play().catch(err => {
                 console.warn('Auto-play error:', err);
             });
         }
- 
-         videoElement.style.display = 'block';
-         canvasEl.style.display = 'none';
-     } catch (err) {
-         console.error('Camera error:', err);
-         showError('Не удалось получить доступ к камере. Разрешите доступ и попробуйте снова.');
-         captureBtn.disabled = true;
-     }
- }
- 
+
+        enableCaptureButton(view);
+
+        videoElement.style.display = 'block';
+        canvasEl.style.display = 'none';
+    } catch (err) {
+        console.error('Camera error:', err);
+        showError('Не удалось получить доступ к камере. Разрешите доступ и попробуйте снова.');
+        captureBtn.disabled = true;
+    }
+}
+
+function enableCaptureButton(view) {
+    const btn = view === 'session' ? sessionCaptureButton : captureButton;
+    btn.disabled = false;
+    btn.classList.remove('hidden');
+    btn.style.opacity = '1';
+    btn.style.display = 'block';
+}
+
  function stopCamera() {
      if (stream) {
          stream.getTracks().forEach(track => track.stop());
