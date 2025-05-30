@@ -480,6 +480,19 @@ async function sendSessionData() {
          switchView(view);
      });
  });
+
+    let zoom = 1;
+
+    document.getElementById('zoomSlider').addEventListener('input', (e) => {
+    zoom = parseFloat(e.target.value);
+    const vid = document.querySelector('.view.active video');
+    if (vid) vid.style.transform = `scale(${zoom})`;
+    });
+
+    const spotlightMask = document.getElementById('spotlightMask');
+    document.addEventListener('mousemove', (e) => {
+    spotlightMask.style.background = `radial-gradient(circle at ${e.clientX}px ${e.clientY}px, transparent 100px, rgba(0,0,0,0.6) 200px)`;
+    });
  
  map.on('click', e => createDraggableMarker(e.latlng));
  
