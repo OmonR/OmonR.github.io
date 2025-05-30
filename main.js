@@ -160,6 +160,8 @@ async function startCamera(view) {
             return;
         }
 
+        await new Promise(resolve => setTimeout(resolve, 300));
+
         // Показываем нужную кнопку
         if (view === 'camera') {
             captureButton.classList.remove('hidden');
