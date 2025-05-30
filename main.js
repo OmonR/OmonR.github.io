@@ -37,6 +37,7 @@ const webapp = window.Telegram.WebApp;
  const photoCounter = document.getElementById('photoCounter');
  const photoGrid = document.getElementById('photoGrid');
  const urlParams = new URLSearchParams(window.location.search);
+ const isAndroid = /Android/i.test(navigator.userAgent);
  const chatId = urlParams.get('chat_id');
  const msgId  = urlParams.get('msg_id');
  const carId  = urlParams.get('car_id');
@@ -116,11 +117,48 @@ const webapp = window.Telegram.WebApp;
      currentMarker = L.marker(latlng, { draggable: true }).addTo(map);
      continueButton.classList.remove('hidden');
  }
+
+ async function initCamera(videoElement, view) {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        videoElement.srcObject = stream;
+        await videoElement.play();
+
+        // UI включение
+        videoElement.style.display = 'block';
+        const canvasEl = view === 'session' ? sessionCanvas : canvas;
+        canvasEl.style.display = 'none';
+
+        const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
+        captureBtn.disabled = false;
+        captureBtn.classList.remove('hidden');
+        captureBtn.style.display = 'block';
+        captureBtn.style.opacity = '1';
+    } catch (err) {
+        console.error('Camera error:', err);
+        showError('Не удалось запустить камеру.');
+    }
+}
+
  
  async function startCamera(view) {
      const videoElement = view === 'session' ? sessionVideo : video;
      const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
      const canvasEl = view === 'session' ? sessionCanvas : canvas;
+
+     if (isAndroid) {
+            const prompt = document.getElementById('androidTouchPrompt');
+            prompt.classList.remove('hidden');
+
+            prompt.addEventListener('click', async () => {
+                prompt.classList.add('hidden');
+                await initCamera(videoElement, view);
+            }, { once: true });
+
+            return;
+        }
+
+        await initCamera(videoElement, view);
  
      if (stream) stopCamera(); // 💡 предотвращаем повторный вызов
  

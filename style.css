@@ -552,6 +552,26 @@ body {
   display: none;
 }
 
+.touch-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: var(--tg-theme-button-text-color, #fff);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1rem;
+  z-index: 9999;
+  text-align: center;
+  padding: 2rem;
+  cursor: pointer;
+  user-select: none;
+}
+.hidden {
+  display: none !important;
+}
+
+
 @keyframes spin {
     to {
         transform: rotate(360deg);
