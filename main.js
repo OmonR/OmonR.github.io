@@ -41,14 +41,6 @@ const webapp = window.Telegram.WebApp;
  const msgId  = urlParams.get('msg_id');
  const carId  = urlParams.get('car_id');
  
- // Zoom and flash controls
- const zoomSlider = document.getElementById('zoomSlider');
- const zoomValue = document.getElementById('zoomValue');
- const flashButton = document.getElementById('flashButton');
- const sessionZoomSlider = document.getElementById('sessionZoomSlider');
- const sessionZoomValue = document.getElementById('sessionZoomValue');
- const sessionFlashButton = document.getElementById('sessionFlashButton');
- 
  const action = urlParams.get('action') || 'start';
  
  let currentMarker = null;
@@ -56,14 +48,6 @@ const webapp = window.Telegram.WebApp;
  let photoTaken = false;
  let sessionPhotos = [];
  const REQUIRED_PHOTOS = 4;
- 
- // Camera capabilities
- let hasZoomCapability = false;
- let hasTorchCapability = false;
- let videoTrack = null;
- let zoomCapabilities = { min: 1, max: 1, step: 0.1 };
- let currentZoomLevel = 1;
- let isTorchOn = false;
  
  // 3. Initialize Map
  const map = L.map('map').setView([51.505, -0.09], 13);
@@ -137,70 +121,17 @@ const webapp = window.Telegram.WebApp;
      const videoElement = view === 'session' ? sessionVideo : video;
      const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
      const canvasEl = view === 'session' ? sessionCanvas : canvas;
-     const zoomSliderEl = view === 'session' ? sessionZoomSlider : zoomSlider;
-     const zoomValueEl = view === 'session' ? sessionZoomValue : zoomValue;
-     const flashButtonEl = view === 'session' ? sessionFlashButton : flashButton;
  
      if (stream) stopCamera(); // 💡 предотвращаем повторный вызов
  
      if (photoTaken) resetCameraView(); // 💡 возможно, сделать reset по view
  
      try {
-         // Initialize with default constraints
-         const constraints = {
-             video: { 
-                 facingMode: 'environment',
-                 width: { ideal: 1920 },
-                 height: { ideal: 1080 }
-             }
-         };
-         
-         stream = await navigator.mediaDevices.getUserMedia(constraints);
+         stream = await navigator.mediaDevices.getUserMedia({
+             video: { facingMode: 'environment' }
+         });
          videoElement.srcObject = stream;
-         
-         // Get video track for applying constraints
-         videoTrack = stream.getVideoTracks()[0];
-         
-         // Check camera capabilities
-         if (videoTrack) {
-             const capabilities = videoTrack.getCapabilities();
-             
-             // Check for zoom capability
-             if (capabilities.zoom) {
-                 hasZoomCapability = true;
-                 zoomCapabilities.min = capabilities.zoom.min;
-                 zoomCapabilities.max = capabilities.zoom.max;
-                 
-                 // Set up zoom slider
-                 zoomSliderEl.min = zoomCapabilities.min;
-                 zoomSliderEl.max = zoomCapabilities.max;
-                 zoomSliderEl.value = zoomCapabilities.min;
-                 zoomValueEl.textContent = `${zoomCapabilities.min.toFixed(1)}x`;
-                 currentZoomLevel = zoomCapabilities.min;
-                 
-                 // Show zoom controls
-                 zoomSliderEl.style.display = 'block';
-                 zoomValueEl.style.display = 'block';
-             } else {
-                 // Hide zoom controls if not supported
-                 zoomSliderEl.style.display = 'none';
-                 zoomValueEl.style.display = 'none';
-             }
-             
-             // Check for torch capability
-             if (capabilities.torch) {
-                 hasTorchCapability = true;
-                 flashButtonEl.style.display = 'flex';
-                 // Reset torch state when starting camera
-                 isTorchOn = false;
-                 flashButtonEl.classList.remove('flash-on');
-                 flashButtonEl.classList.add('flash-off');
-             } else {
-                 // Hide flash button if not supported
-                 flashButtonEl.style.display = 'none';
-             }
-         }
-
+ 
          await videoElement.play().catch(err => {
              console.warn('Auto-play error:', err);
          });
@@ -232,14 +163,9 @@ const webapp = window.Telegram.WebApp;
      if (stream) {
          stream.getTracks().forEach(track => track.stop());
          stream = null;
-         videoTrack = null;
      }
      [video, sessionVideo].forEach(v => v.srcObject = null);
      [captureButton, sessionCaptureButton].forEach(btn => btn.disabled = true);
-     
-     // Reset zoom and flash states
-     currentZoomLevel = 1;
-     isTorchOn = false;
  }
  
  function resetCameraView() {
@@ -610,81 +536,6 @@ async function sendSessionData() {
  continueToPhotos.addEventListener('click', () => {
      if (odometer.value) switchView('session');
  });
-
- // Zoom slider functionality for both camera views
- function setupZoomControls(sliderEl, valueEl, isSessionView) {
-     sliderEl.addEventListener('input', () => {
-         if (!videoTrack || !hasZoomCapability) return;
-         
-         const newZoomLevel = parseFloat(sliderEl.value);
-         valueEl.textContent = `${newZoomLevel.toFixed(1)}x`;
-         
-         // Apply zoom constraint gradually with step 0.1
-         const applyZoom = async (currentZoom, targetZoom) => {
-             const step = 0.1;
-             const direction = targetZoom > currentZoom ? 1 : -1;
-             
-             while (Math.abs(currentZoom - targetZoom) > 0.05) {
-                 currentZoom += step * direction;
-                 if ((direction > 0 && currentZoom > targetZoom) || 
-                     (direction < 0 && currentZoom < targetZoom)) {
-                     currentZoom = targetZoom;
-                 }
-                 
-                 try {
-                     await videoTrack.applyConstraints({ 
-                         advanced: [{ zoom: currentZoom }]
-                     });
-                 } catch (err) {
-                     console.error('Error applying zoom:', err);
-                     break;
-                 }
-                 
-                 // Small delay for smoother transition
-                 await new Promise(resolve => setTimeout(resolve, 10));
-             }
-             
-             currentZoomLevel = targetZoom;
-         };
-         
-         applyZoom(currentZoomLevel, newZoomLevel);
-     });
- }
- 
- // Flash button functionality for both camera views
- function setupFlashControls(buttonEl, isSessionView) {
-     buttonEl.addEventListener('click', async () => {
-         if (!videoTrack || !hasTorchCapability) return;
-         
-         try {
-             isTorchOn = !isTorchOn;
-             await videoTrack.applyConstraints({
-                 advanced: [{ torch: isTorchOn }]
-             });
-             
-             if (isTorchOn) {
-                 buttonEl.classList.remove('flash-off');
-                 buttonEl.classList.add('flash-on');
-             } else {
-                 buttonEl.classList.remove('flash-on');
-                 buttonEl.classList.add('flash-off');
-             }
-             
-             // Provide haptic feedback if available
-             if (window.Telegram?.WebApp?.HapticFeedback) {
-                 Telegram.WebApp.HapticFeedback.impactOccurred('light');
-             }
-         } catch (err) {
-             console.error('Error toggling torch:', err);
-         }
-     });
- }
- 
- // Setup zoom and flash controls for both camera views
- setupZoomControls(zoomSlider, zoomValue, false);
- setupZoomControls(sessionZoomSlider, sessionZoomValue, true);
- setupFlashControls(flashButton, false);
- setupFlashControls(sessionFlashButton, true);
  
  // 6. Initialize Application
  function initApp() {
