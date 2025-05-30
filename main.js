@@ -502,20 +502,36 @@ async function sendSessionData() {
  
  map.on('click', e => createDraggableMarker(e.latlng));
  
- locationButton.addEventListener('click', () => {
-     if (!navigator.geolocation) {
-         alert('Геолокация блокируется устройством или прииложенем');
-         return;
-     }
- 
-     navigator.geolocation.getCurrentPosition(
-         ({ coords }) => {
-             createDraggableMarker([coords.latitude, coords.longitude]);
-             map.setView([coords.latitude, coords.longitude], 15);
-         },
-         () => alert('Геолокация блокируется устройством или прииложенем')
-     );
- });
+locationButton.addEventListener('click', () => {
+    if (!navigator.geolocation) {
+        alert('Геолокация не поддерживается устройством.');
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        ({ coords }) => {
+            createDraggableMarker([coords.latitude, coords.longitude]);
+            map.setView([coords.latitude, coords.longitude], 15);
+        },
+        (err) => {
+            console.warn('Geolocation error:', err);
+            if (err.code === err.PERMISSION_DENIED) {
+                alert('⛔ Доступ к геолокации запрещён. Проверьте настройки приложения или браузера.');
+            } else if (err.code === err.POSITION_UNAVAILABLE) {
+                alert('⚠️ Геопозиция недоступна. Попробуйте позже.');
+            } else if (err.code === err.TIMEOUT) {
+                alert('⌛ Время ожидания геолокации истекло.');
+            } else {
+                alert('❌ Не удалось получить геолокацию.');
+            }
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        }
+    );
+});
  
  captureButton.addEventListener('click', () => {
      const croppedPhoto = captureAndCropPhoto(video, canvas);
