@@ -39,6 +39,20 @@
             <div class="camera-container">
                 <video id="video" autoplay playsinline></video>
                 <canvas id="canvas"></canvas>
+                
+                <!-- Camera Controls Panel -->
+                <div class="camera-top-controls">
+                    <input type="range" id="zoomSlider" class="zoom-slider" min="1" max="10" step="0.1" value="1">
+                    <span id="zoomValue" class="zoom-value">1.0x</span>
+                    <button id="flashButton" class="flash-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M8 16L12 12L8 8"></path>
+                            <path d="M12 12L16 16"></path>
+                            <path d="M12 12L16 8"></path>
+                        </svg>
+                    </button>
+                </div>
+                
                 <div class="camera-controls">
                     <button id="captureButton" class="capture-button">
                         <div class="capture-button-inner"></div>
@@ -80,6 +94,20 @@
             <div class="camera-container">
                 <video id="sessionVideo" autoplay playsinline></video>
                 <canvas id="sessionCanvas"></canvas>
+                
+                <!-- Session Camera Controls Panel -->
+                <div class="camera-top-controls">
+                    <input type="range" id="sessionZoomSlider" class="zoom-slider" min="1" max="10" step="0.1" value="1">
+                    <span id="sessionZoomValue" class="zoom-value">1.0x</span>
+                    <button id="sessionFlashButton" class="flash-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M8 16L12 12L8 8"></path>
+                            <path d="M12 12L16 16"></path>
+                            <path d="M12 12L16 8"></path>
+                        </svg>
+                    </button>
+                </div>
+                
                 <div class="camera-controls">
                     <button id="sessionCaptureButton" class="capture-button">
                         <div class="capture-button-inner"></div>

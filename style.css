@@ -208,6 +208,7 @@ body {
   transform: translateX(-50%);
   display: flex;
   gap: 1rem;
+  z-index: 5; /* Ensure it's above other elements but below top controls */
 }
 
 .capture-button {
@@ -422,6 +423,7 @@ body {
     justify-content: space-between;
     padding: 1rem;
     align-items: center;
+    z-index: 5; /* Ensure proper z-index */
 }
 
 .circle-button {
@@ -486,62 +488,96 @@ body {
 /* Контейнер в верхней части камеры */
 .camera-top-controls {
   position: absolute;
-  top: 0.5rem;
+  top: 1rem;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.5);
   padding: 0.5rem 1rem;
-  border-radius: 1rem;
+  border-radius: 1.5rem;
   z-index: 10;
+  max-width: 90%;
+  width: auto;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: opacity 0.3s ease;
 }
 
-/* Flash-кнопка уменьшенного размера */
+/* Flash-кнопка */
 .flash-button {
   width: 36px;
   height: 36px;
-  font-size: 20px;
   padding: 0;
   background: var(--tg-theme-button-color);
   color: #fff;
   border: none;
   border-radius: 50%;
-  display: none; /* по умолчанию скрыта */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.flash-button:active {
+  transform: scale(0.95);
+}
+
+.flash-button.flash-on svg {
+  fill: #fff;
+}
+
+.flash-button.flash-off {
+  background-color: #666;
 }
 
 /* Плавный и широкий ползунок */
 .zoom-slider {
-  width: 200px;
+  width: 150px;
   height: 8px;
-  background: #ccc;
+  background: rgba(255, 255, 255, 0.3);
   border-radius: 4px;
   -webkit-appearance: none;
   appearance: none;
-  display: none; /* по умолчанию скрыт */
+  margin: 0;
+  outline: none;
+  transition: background 0.2s ease;
 }
+
 .zoom-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: var(--tg-theme-button-color);
   cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   transition: transform 0.2s ease;
 }
-.zoom-slider::-webkit-slider-thumb:hover {
+
+.zoom-slider::-webkit-slider-thumb:hover,
+.zoom-slider::-webkit-slider-thumb:active {
   transform: scale(1.2);
 }
+
 .zoom-slider::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: var(--tg-theme-button-color);
   cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   transition: transform 0.2s ease;
 }
-.zoom-slider::-moz-range-thumb:hover {
+
+.zoom-slider::-moz-range-thumb:hover,
+.zoom-slider::-moz-range-thumb:active {
   transform: scale(1.2);
 }
 
@@ -549,7 +585,10 @@ body {
 .zoom-value {
   color: #fff;
   font-size: 0.9rem;
-  display: none;
+  min-width: 40px;
+  text-align: center;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 @keyframes spin {
