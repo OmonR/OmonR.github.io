@@ -137,7 +137,7 @@ async function startCamera(view) {
         try {
             await videoElement.play();
         } catch (err) {
-            alert("err:", err); //почему вызывается этот блок на первом фото?
+            alert(`err: ${err}`); //почему вызывается этот блок на первом фото?
         }
 
         const isReady = await new Promise(resolve => {
