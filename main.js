@@ -153,6 +153,9 @@ const webapp = window.Telegram.WebApp;
                 overlay.classList.add('hidden');
                 try {
                     await videoElement.play();
+                    sessionCaptureButton.classList.remove('hidden');
+                    sessionCaptureButton.disabled = false;
+                    sessionCaptureButton.style.opacity = '1';
                 } catch (err) {
                     console.warn('User-triggered play failed:', err);
                     showError('Ошибка запуска камеры. Попробуйте ещё раз.');
@@ -527,60 +530,20 @@ async function sendSessionData() {
      showReviewButtons();
  });
  
-    sessionCaptureButton.addEventListener('click', () => {
-        try {
-            const photoData = capturePhoto(sessionVideo, sessionCanvas);
-            if (!photoData) {
-                alert('❌ Ошибка: не удалось получить фото.');
-                return;
-            }
-
-            if (sessionPhotos.length < REQUIRED_PHOTOS) {
-                sessionPhotos.push(photoData);
-            } else {
-                alert('❗ Достигнуто максимальное количество фото');
-            }
-
-            updateSessionUI();
-
-            if (sessionPhotos.length === REQUIRED_PHOTOS) {
-                alert('📤 Отправка данных...');
-                setTimeout(() => sendSessionData().catch(err => {
-                    alert('❌ Ошибка при отправке данных: ' + err.message);
-                    console.error(err);
-                }), 1000);
-            } else {
-                setTimeout(() => startCamera('session').catch(err => {
-                    alert('❌ Ошибка при перезапуске камеры: ' + err.message);
-                    console.error(err);
-                }), 500);
-            }
-        } catch (err) {
-            alert('❌ Неизвестная ошибка в sessionCaptureButton: ' + err.message);
-            console.error('sessionCaptureButton error:', err);
-        }
-    });
-
-setTimeout(() => {
-  const btn = document.getElementById('sessionCaptureButton');
-  if (!btn) {
-    alert('[DEBUG] sessionCaptureButton не найден');
-    return;
-  }
-
-  alert('[DEBUG] sessionCaptureButton найден, добавим временный слушатель');
-
-  btn.style.outline = '3px solid red'; // визуальный отладочный маркер
-
-  btn.addEventListener('click', () => {
-    alert('[DEBUG] Нажатие по sessionCaptureButton сработало');
-  });
-
-  // Проверка computed styles
-  const style = window.getComputedStyle(btn);
-  alert('[DEBUG] Стили кнопки: display=' + style.display + ', visibility=' + style.visibility + ', opacity=' + style.opacity + ', pointer-events=' + style.pointerEvents + ', z-index=' + style.zIndex);
-
-}, 3000); // Ждём прогрузки DOM и смены view
+ sessionCaptureButton.addEventListener('click', () => {
+     const photoData = capturePhoto(sessionVideo, sessionCanvas);
+     if (sessionPhotos.length < REQUIRED_PHOTOS) {
+         sessionPhotos.push(photoData);
+     }
+     updateSessionUI();
+ 
+     if (sessionPhotos.length === REQUIRED_PHOTOS) {
+         showNotification('📤 Отправка данных...');
+         setTimeout(() => sendSessionData(), 1000);
+     } else {
+         setTimeout(() => startCamera('session'), 500);
+     }
+ });
  
  continueButton.addEventListener('click', () => switchView('camera'));
  backButton.addEventListener('click', () => startCamera('camera'));
