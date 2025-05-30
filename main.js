@@ -117,47 +117,72 @@ const webapp = window.Telegram.WebApp;
      continueButton.classList.remove('hidden');
  }
  
- async function startCamera(view) {
-     const videoElement = view === 'session' ? sessionVideo : video;
-     const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
-     const canvasEl = view === 'session' ? sessionCanvas : canvas;
- 
-     if (stream) stopCamera(); // 💡 предотвращаем повторный вызов
- 
-     if (photoTaken) resetCameraView(); // 💡 возможно, сделать reset по view
- 
-     try {
-         stream = await navigator.mediaDevices.getUserMedia({
-             video: { facingMode: 'environment' }
-         });
-         videoElement.srcObject = stream;
- 
-         await videoElement.play().catch(err => {
-             console.warn('Auto-play error:', err);
-         });
- 
-         if (view === 'camera') {
-             captureButton.classList.remove('hidden');
-             captureButton.style.opacity = '1';
-             captureButton.style.display = '';
-             captureButton.disabled = false;
-         }
- 
-         if (view === 'session') {
-             sessionCaptureButton.disabled = false;
-             sessionCaptureButton.classList.remove('hidden');
-             sessionCaptureButton.style.opacity = '1';
-             sessionCaptureButton.style.display = 'block';
-         }
- 
-         videoElement.style.display = 'block';
-         canvasEl.style.display = 'none';
-     } catch (err) {
-         console.error('Camera error:', err);
-         showError('Не удалось получить доступ к камере. Разрешите доступ и попробуйте снова.');
-         captureBtn.disabled = true;
-     }
- }
+async function startCamera(view) {
+    const videoElement = view === 'session' ? sessionVideo : video;
+    const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
+    const canvasEl = view === 'session' ? sessionCanvas : canvas;
+
+    if (stream) stopCamera(); // отключаем предыдущий поток
+
+    if (photoTaken) resetCameraView();
+
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment' }
+        });
+
+        videoElement.srcObject = stream;
+        videoElement.style.display = 'block'; // обязательно видимым ДО play()
+
+        // Пробуем запустить видео
+        try {
+            await videoElement.play();
+        } catch (err) {
+            alert("video.play() failed:", err);
+        }
+
+        // Ждём, пока видео станет готово (videoWidth > 0)
+        const isReady = await new Promise(resolve => {
+            const timeout = setTimeout(() => resolve(false), 3000);
+            const checkReady = () => {
+                if (videoElement.videoWidth > 0) {
+                    clearTimeout(timeout);
+                    resolve(true);
+                }
+            };
+
+            videoElement.addEventListener('loadeddata', checkReady, { once: true });
+            setTimeout(checkReady, 300); // запасной вариант
+        });
+
+        if (!isReady) {
+            showError("Камера не загрузилась. Попробуйте ещё раз.");
+            return;
+        }
+
+        // Показываем нужную кнопку
+        if (view === 'camera') {
+            captureButton.classList.remove('hidden');
+            captureButton.style.opacity = '1';
+            captureButton.style.display = '';
+            captureButton.disabled = false;
+        }
+
+        if (view === 'session') {
+            sessionCaptureButton.classList.remove('hidden');
+            sessionCaptureButton.style.opacity = '1';
+            sessionCaptureButton.style.display = 'block';
+            sessionCaptureButton.disabled = false;
+        }
+
+        canvasEl.style.display = 'none';
+    } catch (err) {
+        console.error('Camera error:', err);
+        showError('Не удалось получить доступ к камере. Разрешите доступ и попробуйте снова.');
+        captureBtn.disabled = true;
+    }
+}
+
  
  function stopCamera() {
      if (stream) {
@@ -505,7 +530,6 @@ async function sendSessionData() {
      video.style.display = 'none';
      captureButton.style.display = 'none';
  
-     // Скрываем nav-button
      document.querySelector('.nav-tabs').classList.add('hidden');
      
      showReviewButtons();
