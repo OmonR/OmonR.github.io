@@ -138,7 +138,7 @@ async function startCamera(view) {
         try {
             await videoElement.play();
         } catch (err) {
-            alert("video.play() failed:", err);
+            alert(err);
         }
 
         // Ждём, пока видео станет готово (videoWidth > 0)
