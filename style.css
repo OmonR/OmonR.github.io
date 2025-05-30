@@ -483,29 +483,73 @@ body {
     animation: fadeIn 0.3s ease-in-out;
 }
 
-.zoom-controls {
+/* Контейнер в верхней части камеры */
+.camera-top-controls {
   position: absolute;
-  bottom: 5rem;
-  width: 100%;
+  top: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  justify-content: center;
-  z-index: 10001;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  z-index: 10;
 }
 
-#zoomSlider {
-  width: 80%;
+/* Flash-кнопка уменьшенного размера */
+.flash-button {
+  width: 36px;
+  height: 36px;
+  font-size: 20px;
+  padding: 0;
+  background: var(--tg-theme-button-color);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  display: none; /* по умолчанию скрыта */
 }
 
-.spotlight-mask {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  background: radial-gradient(circle at center, transparent 100px, rgba(0, 0, 0, 0.6) 200px);
-  mix-blend-mode: multiply;
-  z-index: 10000;
+/* Плавный и широкий ползунок */
+.zoom-slider {
+  width: 200px;
+  height: 8px;
+  background: #ccc;
+  border-radius: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  display: none; /* по умолчанию скрыт */
+}
+.zoom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--tg-theme-button-color);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.zoom-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+.zoom-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--tg-theme-button-color);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.zoom-slider::-moz-range-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* Значение зума */
+.zoom-value {
+  color: #fff;
+  font-size: 0.9rem;
+  display: none;
 }
 
 @keyframes spin {
