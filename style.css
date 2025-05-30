@@ -100,7 +100,7 @@ body {
     bottom: 0;
     right: 0;
     height: 1rem;
-    background-color: white;
+    background-color: var(--tg-theme-bg-color);
     width: 100%;
     z-index: 100;
 }
@@ -202,10 +202,12 @@ body {
 }
 
 .camera-controls {
-    position: absolute;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
+  position: absolute;
+  bottom: 3.5rem; /* чуть выше nav-tabs */
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 1rem;
 }
 
 .capture-button {
@@ -481,6 +483,74 @@ body {
     animation: fadeIn 0.3s ease-in-out;
 }
 
+/* Контейнер в верхней части камеры */
+.camera-top-controls {
+  position: absolute;
+  top: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  z-index: 10;
+}
+
+/* Flash-кнопка уменьшенного размера */
+.flash-button {
+  width: 36px;
+  height: 36px;
+  font-size: 20px;
+  padding: 0;
+  background: var(--tg-theme-button-color);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  display: none; /* по умолчанию скрыта */
+}
+
+/* Плавный и широкий ползунок */
+.zoom-slider {
+  width: 200px;
+  height: 8px;
+  background: #ccc;
+  border-radius: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  display: none; /* по умолчанию скрыт */
+}
+.zoom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--tg-theme-button-color);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.zoom-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+.zoom-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--tg-theme-button-color);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.zoom-slider::-moz-range-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* Значение зума */
+.zoom-value {
+  color: #fff;
+  font-size: 0.9rem;
+  display: none;
+}
 
 @keyframes spin {
     to {
