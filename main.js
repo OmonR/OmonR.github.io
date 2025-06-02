@@ -121,51 +121,65 @@ const webapp = window.Telegram.WebApp;
  
 let hasTappedToStart = false;
 
-async function startCamera(view) {
-    const videoElement = view === 'session' ? sessionVideo : video;
-    const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
-    const canvasEl = view === 'session' ? sessionCanvas : canvas;
+// Camera zoom and torch logic
+let currentZoom = 1.0;
+let torchOn = false;
 
-    try {
-        stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'environment' }
-        });
-        videoElement.srcObject = stream;
+const zoomSlider = document.getElementById('zoomSlider');
+const torchButton = document.getElementById('torchButton');
 
-        if (view === 'session' && isAndroid && !hasTappedToStart) {
-            const overlay = document.getElementById('tapToStartOverlay');
-            overlay.classList.remove('hidden');
-
-            overlay.addEventListener('click', async () => {
-                overlay.classList.add('hidden');
-                hasTappedToStart = true;
-
-                try {
-                    await videoElement.play();
-                    enableCaptureButton(view);
-                } catch (err) {
-                    console.warn('User-triggered play failed:', err);
-                    showError('Ошибка запуска камеры. Попробуйте ещё раз.');
-                }
-            }, { once: true });
-
-            return; // Android: ждём пользовательский тап
-        } else {
-            await videoElement.play().catch(err => {
-                console.warn('Auto-play error:', err);
-            });
+function setCameraZoom(zoom) {
+    if (stream && stream.getVideoTracks) {
+        const [track] = stream.getVideoTracks();
+        if (track && track.getCapabilities && track.applyConstraints) {
+            const caps = track.getCapabilities();
+            if (caps.zoom) {
+                track.applyConstraints({ advanced: [{ zoom }] });
+            }
         }
-
-        enableCaptureButton(view);
-
-        videoElement.style.display = 'block';
-        canvasEl.style.display = 'none';
-    } catch (err) {
-        console.error('Camera error:', err);
-        showError('Не удалось получить доступ к камере. Разрешите доступ и попробуйте снова.');
-        captureBtn.disabled = true;
     }
 }
+
+function setTorch(on) {
+    if (stream && stream.getVideoTracks) {
+        const [track] = stream.getVideoTracks();
+        if (track && track.getCapabilities && track.getCapabilities().torch) {
+            track.applyConstraints({ advanced: [{ torch: on }] });
+            torchButton.classList.toggle('on', on);
+        }
+    }
+}
+
+if (zoomSlider) {
+    zoomSlider.addEventListener('input', (e) => {
+        currentZoom = parseFloat(e.target.value);
+        setCameraZoom(currentZoom);
+    });
+}
+
+if (torchButton) {
+    torchButton.addEventListener('click', () => {
+        torchOn = !torchOn;
+        setTorch(torchOn);
+    });
+}
+
+// When starting camera, reset zoom and torch
+const origStartCamera = startCamera;
+startCamera = async function(view) {
+    await origStartCamera.call(this, view);
+    if (view === 'camera') {
+        if (zoomSlider) {
+            zoomSlider.value = '1.0';
+            currentZoom = 1.0;
+            setCameraZoom(currentZoom);
+        }
+        if (torchButton) {
+            torchOn = false;
+            setTorch(false);
+        }
+    }
+};
 
 function enableCaptureButton(view) {
     const btn = view === 'session' ? sessionCaptureButton : captureButton;
