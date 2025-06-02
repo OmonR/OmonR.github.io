@@ -121,6 +121,49 @@ const webapp = window.Telegram.WebApp;
  
 let hasTappedToStart = false;
 
+// Camera zoom and torch logic
+let currentZoom = 1.0;
+let torchOn = false;
+
+const zoomSlider = document.getElementById('zoomSlider');
+const torchButton = document.getElementById('torchButton');
+
+function setCameraZoom(zoom) {
+    if (stream && stream.getVideoTracks) {
+        const [track] = stream.getVideoTracks();
+        if (track && track.getCapabilities && track.applyConstraints) {
+            const caps = track.getCapabilities();
+            if (caps.zoom) {
+                track.applyConstraints({ advanced: [{ zoom }] });
+            }
+        }
+    }
+}
+
+function setTorch(on) {
+    if (stream && stream.getVideoTracks) {
+        const [track] = stream.getVideoTracks();
+        if (track && track.getCapabilities && track.getCapabilities().torch) {
+            track.applyConstraints({ advanced: [{ torch: on }] });
+            torchButton.classList.toggle('on', on);
+        }
+    }
+}
+
+if (zoomSlider) {
+    zoomSlider.addEventListener('input', (e) => {
+        currentZoom = parseFloat(e.target.value);
+        setCameraZoom(currentZoom);
+    });
+}
+
+if (torchButton) {
+    torchButton.addEventListener('click', () => {
+        torchOn = !torchOn;
+        setTorch(torchOn);
+    });
+}
+
 async function startCamera(view) {
     const videoElement = view === 'session' ? sessionVideo : video;
     const captureBtn = view === 'session' ? sessionCaptureButton : captureButton;
@@ -160,6 +203,20 @@ async function startCamera(view) {
 
         videoElement.style.display = 'block';
         canvasEl.style.display = 'none';
+
+        // --- Zoom and torch logic ---
+        if (view === 'camera') {
+            if (zoomSlider) {
+                zoomSlider.value = '1.0';
+                currentZoom = 1.0;
+                setCameraZoom(currentZoom);
+            }
+            if (torchButton) {
+                torchOn = false;
+                setTorch(false);
+            }
+        }
+        // --- End zoom and torch logic ---
     } catch (err) {
         console.error('Camera error:', err);
         showError('Не удалось получить доступ к камере. Разрешите доступ и попробуйте снова.');
