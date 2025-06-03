@@ -40,6 +40,7 @@ const webapp = window.Telegram.WebApp;
  const chatId = urlParams.get('chat_id');
  const msgId  = urlParams.get('msg_id');
  const carId  = urlParams.get('car_id');
+ const cameraTopControls = document.getElementById('cameraTopControls');
  
  const action = urlParams.get('action') || 'start';
  
@@ -204,6 +205,11 @@ async function startCamera(view) {
         videoElement.style.display = 'block';
         canvasEl.style.display = 'none';
 
+        // Show cameraTopControls when in camera view
+        if (view === 'camera' && cameraTopControls) {
+            cameraTopControls.classList.remove('hidden');
+        }
+
         // --- Zoom and torch logic ---
         if (view === 'camera') {
             if (zoomSlider) {
@@ -352,6 +358,9 @@ function enableCaptureButton(view) {
          captureButton.classList.remove('hidden');
          captureButton.disabled = false;
          captureButton.style.display = 'block';
+
+         // Show cameraTopControls when returning to camera
+         if (cameraTopControls) cameraTopControls.classList.remove('hidden');
      });
  }
  
@@ -578,7 +587,10 @@ async function sendSessionData() {
      canvas.style.display = 'block';
      video.style.display = 'none';
      captureButton.style.display = 'none';
- 
+
+     // Hide cameraTopControls after photo capture
+     if (cameraTopControls) cameraTopControls.classList.add('hidden');
+
      // Скрываем nav-button
      document.querySelector('.nav-tabs').classList.add('hidden');
      
