@@ -556,6 +556,7 @@ body {
     appearance: none;
     width: 1.2rem;
     height: 1.2rem;
+    margin-top: -0.35rem; 
     border-radius: 50%;
     background: rgba(255,255,255,0.9);
     border: 2px solid var(--tg-theme-button-color);
